@@ -1,7 +1,5 @@
 syntax:glob
 
-audit.html
-
 # IntelliJ IDEA
 .idea/**
 *.iml

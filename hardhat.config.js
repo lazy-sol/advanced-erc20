@@ -47,7 +47,7 @@
  */
 
 // Loads env variables from .env file
-require('dotenv').config()
+require("dotenv").config()
 
 // Enable Truffle 5 plugin for tests
 // https://hardhat.org/guides/truffle-testing.html

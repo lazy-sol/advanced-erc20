@@ -70,14 +70,14 @@ function print_amt(amt, dm = new BN(10).pow(new BN(18))) {
 		return dm.lt(MILLION)? amt.div(dm).toNumber(): amt.div(MILLION).toNumber() / dm.div(MILLION).toNumber() + '';
 	}
 	else if(amt.div(dm).lt(MILLION)) {
-		const k = amt.div(dm).toNumber() / 1000;
+		const k = amt.div(dm).toNumber() / 1_000;
 		return k + "k";
 	}
 	else if(amt.div(dm).lt(BILLION)) {
-		const m = amt.div(dm).toNumber() / 1000;
+		const m = amt.div(dm).toNumber() / 1_000_000;
 		return m + "m";
 	}
-	const b = amt.div(dm).div(MILLION).toNumber() / 1000;
+	const b = amt.div(dm).div(MILLION).toNumber() / 1_000_000_000;
 	return b + "g";
 }
 
