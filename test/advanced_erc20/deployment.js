@@ -6,7 +6,7 @@ const {
 	constants,
 	expectEvent,
 	expectRevert,
-} = require("@openzeppelin/test-helpers");
+} = require("@lazy-sol/zeppelin-test-helpers");
 const {
 	assert,
 	expect,
@@ -28,11 +28,6 @@ const {
 const {
 	advanced_erc20_deploy_restricted,
 } = require("./include/deployment_routines");
-
-// event helper functions in use
-const {
-	expectEventInTransaction
-} = require("../include/event_helper");
 
 // run ERC20 deployment tests
 contract("ERC20: Deployment tests", function(accounts) {
@@ -95,43 +90,19 @@ contract("ERC20: Deployment tests", function(accounts) {
 						});
 					});
 					it("emits improved Transfer event (arXiv:1907.00903)", async function() {
-						await expectEventInTransaction(token.transactionHash, "Transfer", [{
-							type: "address",
-							name: "by",
-							indexed: true,
-							value: a0,
-						}, {
-							type: "address",
-							name: "from",
-							indexed: true,
-							value: ZERO_ADDRESS,
-						}, {
-							type: "address",
-							name: "to",
-							indexed: true,
-							value: H0,
-						}, {
-							type: "uint256",
-							name: "value",
+						await expectEvent.inConstruction(token, "Transfer", {
+							by: a0,
+							from: ZERO_ADDRESS,
+							to: H0,
 							value: S0,
-						}]);
+						});
 					});
 					it("emits ERC20 Transfer event", async function() {
-						await expectEventInTransaction(token.transactionHash, "Transfer", [{
-							type: "address",
-							name: "from",
-							indexed: true,
-							value: ZERO_ADDRESS,
-						}, {
-							type: "address",
-							name: "to",
-							indexed: true,
-							value: H0,
-						}, {
-							type: "uint256",
-							name: "value",
+						await expectEvent.inConstruction(token, "Transfer", {
+							from: ZERO_ADDRESS,
+							to: H0,
 							value: S0,
-						}]);
+						});
 					});
 				}
 				else {

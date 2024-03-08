@@ -6,7 +6,7 @@ const {
 	constants,
 	expectEvent,
 	expectRevert,
-} = require("@openzeppelin/test-helpers");
+} = require("@lazy-sol/zeppelin-test-helpers");
 const {
 	assert,
 	expect,
@@ -35,7 +35,7 @@ const {
 	deploy_token_factory,
 } = require("./include/deployment_routines");
 
-// run in-depth mint/burn tests
+// run TokenFactory tests
 contract("Token Factory", function(accounts) {
 	// extract accounts to be used:
 	// A0 – special default zero account accounts[0] used by Truffle, reserved

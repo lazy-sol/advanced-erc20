@@ -7,7 +7,7 @@ const { expect } = require("chai");
 const { ecSign, expectRevert/*, Signature*/, strip0x } = require("./helpers/index");
 const { ACCOUNTS_AND_KEYS, MAX_UINT256 } = require("./helpers/constants");
 // we don't use Zeppelin helpers, just enable chai-bn under the hood
-require('@openzeppelin/test-helpers');
+require('@lazy-sol/zeppelin-test-helpers');
 
 const TRANSFER_WITH_AUTHORIZATION_TYPEHASH = web3.utils.keccak256(
   "TransferWithAuthorization(address from,address to,uint256 value,uint256 validAfter,uint256 validBefore,bytes32 nonce)"

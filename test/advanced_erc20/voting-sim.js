@@ -11,7 +11,7 @@ const {
 	constants,
 	expectEvent,
 	expectRevert,
-} = require("@openzeppelin/test-helpers");
+} = require("@lazy-sol/zeppelin-test-helpers");
 const {
 	assert,
 	expect,
@@ -30,7 +30,7 @@ const {
 	draw_amounts,
 	print_booleans,
 	print_symbols,
-} = require("../../scripts/include/bn_utils");
+} = require("@lazy-sol/a-missing-gem/bn_utils");
 
 // token constants
 const {

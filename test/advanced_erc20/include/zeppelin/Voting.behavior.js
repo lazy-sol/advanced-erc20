@@ -2,7 +2,7 @@
 // Source: https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/test/token/ERC20/extensions/ERC20Votes.test.js
 /* eslint-disable */
 
-const { BN, constants, expectEvent, expectRevert, time } = require('@openzeppelin/test-helpers');
+const { BN, constants, expectEvent, expectRevert, time } = require('@lazy-sol/zeppelin-test-helpers');
 const { expect } = require('chai');
 const { MAX_UINT256, ZERO_ADDRESS, ZERO_BYTES32 } = constants;
 // enable chai-subset to allow containSubset instead of deep equals, see https://www.chaijs.com/plugins/chai-subset/

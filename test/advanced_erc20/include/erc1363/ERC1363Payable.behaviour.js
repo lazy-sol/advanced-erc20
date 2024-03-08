@@ -1,7 +1,7 @@
 // Auxiliary behavior for ERC1363Payable test, imported from vittominacori
 // Source: https://github.com/vittominacori/erc1363-payable-token/blob/master/test/payment/ERC1363Payable.behaviour.js
 
-const { BN, constants, expectRevert, expectEvent } = require('@openzeppelin/test-helpers');
+const { BN, constants, expectRevert, expectEvent } = require('@lazy-sol/zeppelin-test-helpers');
 const { shouldSupportInterfaces } = require('./SupportsInterface.behavior');
 const { ZERO_ADDRESS } = constants;
 

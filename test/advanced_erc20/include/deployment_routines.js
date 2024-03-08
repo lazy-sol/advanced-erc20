@@ -3,7 +3,7 @@ const {
 	ZERO_ADDRESS,
 	ZERO_BYTES32,
 	MAX_UINT256,
-} = require("@openzeppelin/test-helpers").constants;
+} = require("@lazy-sol/zeppelin-test-helpers").constants;
 
 // ERC20 constants
 const {

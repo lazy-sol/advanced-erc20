@@ -1,7 +1,7 @@
 // Auxiliary behavior for OpenZeppelin ERC20 mint/burn tests, imported from OpenZeppelin project
 // Source: https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/test/token/ERC20/ERC20.test.js
 
-const { BN, constants, expectEvent, expectRevert } = require('@openzeppelin/test-helpers');
+const { BN, constants, expectEvent, expectRevert } = require('@lazy-sol/zeppelin-test-helpers');
 const { expect } = require('chai');
 const { ZERO_ADDRESS } = constants;
 

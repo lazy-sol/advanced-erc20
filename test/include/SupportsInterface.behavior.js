@@ -1,7 +1,7 @@
 // Auxiliary behavior for ERC165 Interface ID tests, imported from vittominacori
 // Source: https://github.com/vittominacori/erc1363-payable-token/blob/master/test/introspection/SupportsInterface.behavior.js
 
-const { makeInterfaceId } = require('@openzeppelin/test-helpers');
+const { makeInterfaceId } = require('@lazy-sol/zeppelin-test-helpers');
 
 const { expect } = require('chai');
 

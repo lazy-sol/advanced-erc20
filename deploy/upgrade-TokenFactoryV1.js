@@ -5,12 +5,6 @@
 // A Hardhat Plugin For Replicable Deployments And Easy Testing
 // https://www.npmjs.com/package/hardhat-deploy
 
-// BN utils
-const {
-	toBN,
-	print_amt,
-} = require("../scripts/include/bn_utils");
-
 // Zeppelin helper constants
 const {
 	ZERO_ADDRESS,
@@ -20,8 +14,9 @@ const {
 
 // deployment utils (contract state printers)
 const {
+	print_amt,
 	print_contract_details,
-} = require("../scripts/deployment_utils");
+} = require("@lazy-sol/a-missing-gem/deployment_utils");
 
 // to be picked up and executed by hardhat-deploy plugin
 module.exports = async function({deployments, getChainId, getNamedAccounts, getUnnamedAccounts}) {

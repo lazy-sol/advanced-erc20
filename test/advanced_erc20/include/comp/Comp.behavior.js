@@ -2,7 +2,7 @@
 // Source: https://github.com/compound-finance/compound-protocol/blob/master/tests/Governance/CompTest.js
 
 // Zeppelin libraries
-const { BN, constants, expectEvent, expectRevert } = require('@openzeppelin/test-helpers');
+const { BN, constants, expectEvent, expectRevert } = require('@lazy-sol/zeppelin-test-helpers');
 const { expect } = require('chai');
 const { ZERO_ADDRESS, ZERO_BYTES32 } = constants;
 // enable chai-subset to allow containSubset, see https://www.chaijs.com/plugins/chai-subset/

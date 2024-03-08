@@ -6,7 +6,7 @@ const {
 	constants,
 	expectEvent,
 	expectRevert,
-} = require("@openzeppelin/test-helpers");
+} = require("@lazy-sol/zeppelin-test-helpers");
 const {
 	assert,
 	expect,
@@ -30,11 +30,6 @@ const {eip712_cancel} = require("./include/eip712");
 const {
 	advanced_erc20_deploy_detached,
 } = require("./include/deployment_routines");
-
-// event helper functions in use
-const {
-	expectEventInTransaction
-} = require("../include/event_helper");
 
 // run ERC20 deployment tests
 contract("ERC20: Deployment tests", function(accounts) {

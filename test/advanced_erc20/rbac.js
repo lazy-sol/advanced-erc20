@@ -6,7 +6,7 @@ const {
 	constants,
 	expectEvent,
 	expectRevert,
-} = require("@openzeppelin/test-helpers");
+} = require("@lazy-sol/zeppelin-test-helpers");
 const {
 	assert,
 	expect,
@@ -18,7 +18,7 @@ const {
 } = constants;
 
 // BN constants and utilities
-const {random_bn255} = require("../../scripts/include/bn_utils");
+const {random_bn255} = require("@lazy-sol/a-missing-gem/bn_utils");
 
 // RBAC token features and roles
 const {

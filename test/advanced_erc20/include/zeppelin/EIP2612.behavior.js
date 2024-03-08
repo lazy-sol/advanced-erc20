@@ -1,7 +1,7 @@
 // Auxiliary behavior for OpenZeppelin EIP2612 permit tests, imported from OpenZeppelin project
 // Source: https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/test/token/ERC20/extensions/draft-ERC20Permit.test.js
 
-const { BN, constants, expectEvent, expectRevert, time } = require('@openzeppelin/test-helpers');
+const { BN, constants, expectEvent, expectRevert, time } = require('@lazy-sol/zeppelin-test-helpers');
 const { expect } = require('chai');
 const { MAX_UINT256, ZERO_ADDRESS, ZERO_BYTES32 } = constants;
 

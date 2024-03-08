@@ -6,7 +6,7 @@ const {
 	constants,
 	expectEvent,
 	expectRevert,
-} = require("@openzeppelin/test-helpers");
+} = require("@lazy-sol/zeppelin-test-helpers");
 const {
 	assert,
 	expect,
@@ -21,7 +21,7 @@ const {
 const {
 	random_bn,
 	TWO256,
-} = require("../../scripts/include/bn_utils");
+} = require("@lazy-sol/a-missing-gem/bn_utils");
 
 // RBAC token features and roles
 const {
@@ -47,7 +47,6 @@ const {
 const {
 	shouldSupportInterfaces,
 } = require("../include/SupportsInterface.behavior");
-const {expectEventInTransaction} = require("../include/event_helper");
 
 // run very basic token tests
 contract("AdvancedERC20: Token Summary", function(accounts) {
@@ -281,43 +280,19 @@ contract("AdvancedERC20: Token Summary", function(accounts) {
 						receipt = await token.transfer(H0, value, {from: H0});
 					});
 					it("emits improved Transfer event (arXiv:1907.00903)", async function() {
-						await expectEventInTransaction(receipt.tx, "Transfer", [{
-							type: "address",
-							name: "by",
-							indexed: true,
-							value: H0,
-						}, {
-							type: "address",
-							name: "from",
-							indexed: true,
-							value: H0,
-						}, {
-							type: "address",
-							name: "to",
-							indexed: true,
-							value: H0,
-						}, {
-							type: "uint256",
-							name: "value",
+						await expectEvent.inTransaction(receipt.tx, token, "Transfer", {
+							by: H0,
+							from: H0,
+							to: H0,
 							value: value,
-						}]);
+						});
 					});
 					it("emits ERC20 Transfer event", async function() {
-						await expectEventInTransaction(receipt.tx, "Transfer", [{
-							type: "address",
-							name: "from",
-							indexed: true,
-							value: H0,
-						}, {
-							type: "address",
-							name: "to",
-							indexed: true,
-							value: H0,
-						}, {
-							type: "uint256",
-							name: "value",
+						await expectEvent.inTransaction(receipt.tx, token, "Transfer", {
+							from: H0,
+							to: H0,
 							value: value,
-						}]);
+						});
 					});
 					it("sender/receiver balance doesn't change", async function() {
 						expect(await token.balanceOf(H0)).to.be.bignumber.that.equals(S0);
@@ -330,43 +305,19 @@ contract("AdvancedERC20: Token Summary", function(accounts) {
 						receipt = await token.transferFrom(H0, H0, value, {from: by});
 					});
 					it("emits improved Transfer event (arXiv:1907.00903)", async function() {
-						await expectEventInTransaction(receipt.tx, "Transfer", [{
-							type: "address",
-							name: "by",
-							indexed: true,
-							value: by,
-						}, {
-							type: "address",
-							name: "from",
-							indexed: true,
-							value: H0,
-						}, {
-							type: "address",
-							name: "to",
-							indexed: true,
-							value: H0,
-						}, {
-							type: "uint256",
-							name: "value",
+						await expectEvent.inTransaction(receipt.tx, token, "Transfer", {
+							by: by,
+							from: H0,
+							to: H0,
 							value: value,
-						}]);
+						});
 					});
 					it("emits ERC20 Transfer event", async function() {
-						await expectEventInTransaction(receipt.tx, "Transfer", [{
-							type: "address",
-							name: "from",
-							indexed: true,
-							value: H0,
-						}, {
-							type: "address",
-							name: "to",
-							indexed: true,
-							value: H0,
-						}, {
-							type: "uint256",
-							name: "value",
+						await expectEvent.inTransaction(receipt.tx, token, "Transfer", {
+							from: H0,
+							to: H0,
 							value: value,
-						}]);
+						});
 					});
 					it("sender/receiver balance doesn't change", async function() {
 						expect(await token.balanceOf(H0)).to.be.bignumber.that.equals(S0);
@@ -386,43 +337,19 @@ contract("AdvancedERC20: Token Summary", function(accounts) {
 						receipt = await token.transfer(to, 0, {from: H0});
 					});
 					it("emits improved Transfer event (arXiv:1907.00903)", async function() {
-						await expectEventInTransaction(receipt.tx, "Transfer", [{
-							type: "address",
-							name: "by",
-							indexed: true,
-							value: H0,
-						}, {
-							type: "address",
-							name: "from",
-							indexed: true,
-							value: H0,
-						}, {
-							type: "address",
-							name: "to",
-							indexed: true,
-							value: to,
-						}, {
-							type: "uint256",
-							name: "value",
+						await expectEvent.inTransaction(receipt.tx, token, "Transfer", {
+							by: H0,
+							from: H0,
+							to: to,
 							value: "0",
-						}]);
+						});
 					});
 					it("emits ERC20 Transfer event", async function() {
-						await expectEventInTransaction(receipt.tx, "Transfer", [{
-							type: "address",
-							name: "from",
-							indexed: true,
-							value: H0,
-						}, {
-							type: "address",
-							name: "to",
-							indexed: true,
-							value: to,
-						}, {
-							type: "uint256",
-							name: "value",
+						await expectEvent.inTransaction(receipt.tx, token, "Transfer", {
+							from: H0,
+							to: to,
 							value: "0",
-						}]);
+						});
 					});
 					it("sender balance doesn't change", async function() {
 						expect(await token.balanceOf(H0)).to.be.bignumber.that.equals(S0);
@@ -437,43 +364,19 @@ contract("AdvancedERC20: Token Summary", function(accounts) {
 						receipt = await token.transferFrom(H0, to, 0, {from: by});
 					});
 					it("emits improved Transfer event (arXiv:1907.00903)", async function() {
-						await expectEventInTransaction(receipt.tx, "Transfer", [{
-							type: "address",
-							name: "by",
-							indexed: true,
-							value: by,
-						}, {
-							type: "address",
-							name: "from",
-							indexed: true,
-							value: H0,
-						}, {
-							type: "address",
-							name: "to",
-							indexed: true,
-							value: to,
-						}, {
-							type: "uint256",
-							name: "value",
+						await expectEvent.inTransaction(receipt.tx, token, "Transfer", {
+							by: by,
+							from: H0,
+							to: to,
 							value: "0",
-						}]);
+						});
 					});
 					it("emits ERC20 Transfer event", async function() {
-						await expectEventInTransaction(receipt.tx, "Transfer", [{
-							type: "address",
-							name: "from",
-							indexed: true,
-							value: H0,
-						}, {
-							type: "address",
-							name: "to",
-							indexed: true,
-							value: to,
-						}, {
-							type: "uint256",
-							name: "value",
+						await expectEvent.inTransaction(receipt.tx, token, "Transfer", {
+							from: H0,
+							to: to,
 							value: "0",
-						}]);
+						});
 					});
 					it("sender balance doesn't change", async function() {
 						expect(await token.balanceOf(H0)).to.be.bignumber.that.equals(S0);

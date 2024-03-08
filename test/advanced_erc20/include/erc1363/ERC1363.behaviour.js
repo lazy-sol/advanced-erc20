@@ -1,7 +1,7 @@
 // Auxiliary behavior for ERC1363 token test, imported from vittominacori
 // Source: https://github.com/vittominacori/erc1363-payable-token/blob/master/test/token/ERC1363/ERC1363.behaviour.js
 
-const { BN, expectRevert, expectEvent } = require('@openzeppelin/test-helpers');
+const { BN, expectRevert, expectEvent } = require('@lazy-sol/zeppelin-test-helpers');
 const { shouldSupportInterfaces } = require('./SupportsInterface.behavior');
 // enable BN.should.be....
 require("chai").should();
