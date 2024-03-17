@@ -93,11 +93,12 @@ contract("AdvancedERC20: Gas Consumption (Non-functional Requirements) tests", f
 				return await token.delegateWithAuthorization(delegate, nonce, expiry, v, r, s, {from: by});
 			}
 
+			let receipt;
 			function consumes_no_more_than(gas) {
 				// tests marked with @skip-on-coverage will are removed from solidity-coverage,
 				// see yield-solcover.js, see https://github.com/sc-forks/solidity-coverage/blob/master/docs/advanced.md
 				it(`consumes no more than ${gas} gas  [ @skip-on-coverage ]`, async function() {
-					const gasUsed = extract_gas(this.receipt);
+					const gasUsed = extract_gas(receipt);
 					expect(gasUsed).to.be.lte(gas);
 					if(gas - gasUsed > gas / 20) {
 						console.log("only %o gas was used while expected up to %o", gasUsed, gas);
@@ -107,28 +108,28 @@ contract("AdvancedERC20: Gas Consumption (Non-functional Requirements) tests", f
 			function gas_usage_transfers(g1, g2, g3, g4, g5, g6, g7, g8) {
 				describe("direct transfer", function() {
 					beforeEach(async function() {
-						this.receipt = await token.transfer(to, value, {from});
+						receipt = await token.transfer(to, value, {from});
 					});
 					consumes_no_more_than(g1);
 				});
 				describe("transfer on behalf", function() {
 					beforeEach(async function() {
 						await token.approve(by, value.muln(2), {from});
-						this.receipt = await token.transferFrom(from, to, value, {from: by});
+						receipt = await token.transferFrom(from, to, value, {from: by});
 					});
 					consumes_no_more_than(g2);
 				});
 				describe("transfer on behalf with unlimited allowance", function() {
 					beforeEach(async function() {
 						await token.approve(by, MAX_UINT256, {from});
-						this.receipt = await token.transferFrom(from, to, value, {from: by});
+						receipt = await token.transferFrom(from, to, value, {from: by});
 					});
 					consumes_no_more_than(g3);
 				});
 				describe("ERC-1363 transfer and call", function() {
 					beforeEach(async function() {
 						const acceptor = await erc1363_deploy_acceptor(a0);
-						this.receipt = await (token.methods["transferAndCall(address,uint256)"](acceptor.address, value, {from}));
+						receipt = await (token.methods["transferAndCall(address,uint256)"](acceptor.address, value, {from}));
 					});
 					consumes_no_more_than(g4);
 				});
@@ -136,7 +137,7 @@ contract("AdvancedERC20: Gas Consumption (Non-functional Requirements) tests", f
 					beforeEach(async function() {
 						const acceptor = await erc1363_deploy_acceptor(a0);
 						await token.approve(by, value.muln(2), {from});
-						this.receipt = await (token.methods["transferFromAndCall(address,address,uint256)"](from, acceptor.address, value, {from: by}));
+						receipt = await (token.methods["transferFromAndCall(address,address,uint256)"](from, acceptor.address, value, {from: by}));
 					});
 					consumes_no_more_than(g5);
 				});
@@ -144,7 +145,7 @@ contract("AdvancedERC20: Gas Consumption (Non-functional Requirements) tests", f
 					beforeEach(async function() {
 						const acceptor = await erc1363_deploy_acceptor(a0);
 						await token.approve(by, MAX_UINT256, {from});
-						this.receipt = await (token.methods["transferFromAndCall(address,address,uint256)"](from, acceptor.address, value, {from: by}));
+						receipt = await (token.methods["transferFromAndCall(address,address,uint256)"](from, acceptor.address, value, {from: by}));
 					});
 					consumes_no_more_than(g6);
 				});
@@ -157,7 +158,7 @@ contract("AdvancedERC20: Gas Consumption (Non-functional Requirements) tests", f
 							nonce = ZERO_BYTES32.slice(0, -1).concat('1');
 						}
 						const {v, r, s} = await eip712_transfer(token.address, w.address, to, value, validAfter, validBefore, nonce, w.privateKey);
-						this.receipt = await token.transferWithAuthorization(w.address, to, value, validAfter, validBefore, nonce, v, r, s, {from: by});
+						receipt = await token.transferWithAuthorization(w.address, to, value, validAfter, validBefore, nonce, v, r, s, {from: by});
 					});
 					consumes_no_more_than(g7);
 				});
@@ -170,7 +171,7 @@ contract("AdvancedERC20: Gas Consumption (Non-functional Requirements) tests", f
 							nonce = ZERO_BYTES32.slice(0, -1).concat('1');
 						}
 						const {v, r, s} = await eip712_receive(token.address, w.address, to, value, validAfter, validBefore, nonce, w.privateKey);
-						this.receipt = await token.receiveWithAuthorization(w.address, to, value, validAfter, validBefore, nonce, v, r, s, {from: to});
+						receipt = await token.receiveWithAuthorization(w.address, to, value, validAfter, validBefore, nonce, v, r, s, {from: to});
 					});
 					consumes_no_more_than(g8);
 				});
@@ -179,27 +180,27 @@ contract("AdvancedERC20: Gas Consumption (Non-functional Requirements) tests", f
 				describe("mint", function() {
 					beforeEach(async function() {
 						await token.updateRole(by, ROLE_TOKEN_CREATOR, {from: a0});
-						this.receipt = await token.mint(to, value, {from: by});
+						receipt = await token.mint(to, value, {from: by});
 					});
 					consumes_no_more_than(g0);
 				});
 				describe("burn", function() {
 					beforeEach(async function() {
-						this.receipt = await token.burn(from, value, {from});
+						receipt = await token.burn(from, value, {from});
 					});
 					consumes_no_more_than(g1);
 				});
 				describe("burn on behalf", function() {
 					beforeEach(async function() {
 						await token.approve(by, value.muln(2), {from});
-						this.receipt = await token.burn(from, value, {from: by});
+						receipt = await token.burn(from, value, {from: by});
 					});
 					consumes_no_more_than(g2);
 				});
 				describe("burn on behalf with unlimited allowance", function() {
 					beforeEach(async function() {
 						await token.approve(by, MAX_UINT256, {from});
-						this.receipt = await token.burn(from, value, {from: by});
+						receipt = await token.burn(from, value, {from: by});
 					});
 					consumes_no_more_than(g3);
 				});
@@ -208,7 +209,7 @@ contract("AdvancedERC20: Gas Consumption (Non-functional Requirements) tests", f
 				describe("deployment", function() {
 					beforeEach(async function() {
 						const txHash = token.transactionHash;
-						this.receipt = {receipt: await web3.eth.getTransactionReceipt(txHash)};
+						receipt = {receipt: await web3.eth.getTransactionReceipt(txHash)};
 					});
 					consumes_no_more_than(g1);
 				});
@@ -216,27 +217,27 @@ contract("AdvancedERC20: Gas Consumption (Non-functional Requirements) tests", f
 			function gas_usage_approvals(g1, g2, g3, g4, g5) {
 				describe("approve", function() {
 					beforeEach(async function() {
-						this.receipt = await token.approve(by, value, {from});
+						receipt = await token.approve(by, value, {from});
 					});
 					consumes_no_more_than(g1);
 				});
 				describe("atomic approve (increase)", function() {
 					beforeEach(async function() {
-						this.receipt = await token.increaseAllowance(by, value, {from});
+						receipt = await token.increaseAllowance(by, value, {from});
 					});
 					consumes_no_more_than(g2);
 				});
 				describe("atomic approve (decrease)", function() {
 					beforeEach(async function() {
 						await token.increaseAllowance(by, value.muln(2), {from});
-						this.receipt = await token.decreaseAllowance(by, value, {from});
+						receipt = await token.decreaseAllowance(by, value, {from});
 					});
 					consumes_no_more_than(g3);
 				});
 				describe("ERC-1363 approve and call", function() {
 					beforeEach(async function() {
 						const acceptor = await erc1363_deploy_acceptor(a0);
-						this.receipt = await (token.methods["approveAndCall(address,uint256)"](acceptor.address, value, {from}));
+						receipt = await (token.methods["approveAndCall(address,uint256)"](acceptor.address, value, {from}));
 					});
 					consumes_no_more_than(g4);
 				});
@@ -246,7 +247,7 @@ contract("AdvancedERC20: Gas Consumption (Non-functional Requirements) tests", f
 					const nonce = 0;
 					beforeEach(async function() {
 						const {v, r, s} = await eip712_permit(token.address, owner, spender, value, nonce, deadline, w.privateKey);
-						this.receipt = await token.permit(owner, spender, value, deadline, v, r, s, {from: by});
+						receipt = await token.permit(owner, spender, value, deadline, v, r, s, {from: by});
 					});
 					consumes_no_more_than(g5);
 				});
@@ -254,7 +255,7 @@ contract("AdvancedERC20: Gas Consumption (Non-functional Requirements) tests", f
 			function gas_usage_delegation(g1, g2) {
 				describe("delegate", function() {
 					beforeEach(async function() {
-						this.receipt = await token.delegate(to, {from: by});
+						receipt = await token.delegate(to, {from: by});
 					});
 					consumes_no_more_than(g1);
 				});
@@ -269,7 +270,7 @@ contract("AdvancedERC20: Gas Consumption (Non-functional Requirements) tests", f
 							await delegate_with_auth(w.address, nonce);
 							nonce = ZERO_BYTES32.slice(0, -1).concat('1');
 						}
-						this.receipt = await delegate_with_auth(to, nonce);
+						receipt = await delegate_with_auth(to, nonce);
 					});
 					consumes_no_more_than(g2);
 				});
@@ -278,10 +279,10 @@ contract("AdvancedERC20: Gas Consumption (Non-functional Requirements) tests", f
 			function gas_usage_suite() {
 				gas_usage_deployment(3759425);
 				// approve, increase, decrease, 1363 approve, 2612 permit 
-				gas_usage_approvals(48520, 48876, 31808, 57388, 79402);
+				gas_usage_approvals(48520, 48876, 31808, 57400, 79402);
 				describe("when delegation is not involved", function() {
 					// 20: transfer, on behalf, inf.allowance; 1363: transfer, on behalf, inf.allowance; 3009: transfer, receive
-					gas_usage_transfers(61653, 71626, 64462, 68758, 78724, 71563, 87661, 87700);
+					gas_usage_transfers(61653, 71626, 64462, 68764, 78730, 71569, 87661, 87700);
 					// mint, burn, burn on behalf, burn inf.allowance
 					gas_usage_mint_burn(91443, 76668, 86160, 79040);
 				});
@@ -289,13 +290,13 @@ contract("AdvancedERC20: Gas Consumption (Non-functional Requirements) tests", f
 					beforeEach(async function() {
 						await token.delegate(from, {from});
 					});
-					gas_usage_transfers(94834, 104790, 97629, 101920, 111864, 104698, 120808, 120847);
+					gas_usage_transfers(94834, 104790, 97629, 101920, 111865, 104704, 120808, 120847);
 				});
 				describe("when second address is a delegate", function() {
 					beforeEach(async function() {
 						await token.delegate(to, {from: to});
 					});
-					gas_usage_transfers(108943, 118898, 111737, 68785, 78729, 71563, 134904, 134943);
+					gas_usage_transfers(108943, 118898, 111737, 68785, 78730, 71569, 134904, 134943);
 				});
 				describe("when delegation is fully involved", function() {
 					beforeEach(async function() {
@@ -303,7 +304,7 @@ contract("AdvancedERC20: Gas Consumption (Non-functional Requirements) tests", f
 						await token.delegate(to, {from: to});
 					});
 					// 20: transfer, on behalf, inf.allowance; 1363: transfer, on behalf, inf.allowance; 3009: transfer, receive
-					gas_usage_transfers(141961, 151931, 144770, 101893, 111859, 104698, 167979, 168018);
+					gas_usage_transfers(141961, 151931, 144770, 101899, 111865, 104704, 167979, 168018);
 					// mint, burn, burn on behalf, burn inf.allowance
 					gas_usage_mint_burn(138689, 109806, 119298, 112178);
 				});

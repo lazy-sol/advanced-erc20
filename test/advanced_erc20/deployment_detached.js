@@ -24,8 +24,6 @@ const {
 	TOTAL_SUPPLY: S0,
 } = require("./include/erc20_constants");
 
-// EIP712 helpers
-const {eip712_cancel} = require("./include/eip712");
 // deployment routines in use
 const {
 	advanced_erc20_deploy_detached,

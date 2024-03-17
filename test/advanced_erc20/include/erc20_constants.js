@@ -6,7 +6,7 @@ const TEN = new BN(10);
 const NAME = "Advanced Token";
 
 // Smart contract name (including version) for EIP712 signatures
-const CONTRACT_NAME = "AdvancedERC20";
+const CONTRACT_NAME = "AdvancedERC20v1";
 
 // Symbol of the token: ADV
 const SYMBOL = "ADV";

@@ -26,9 +26,10 @@ Advanced Features Summary:
   without having an ETH to pay gas fees
 
 This repo contains the [token implementation](contracts/token/AdvancedERC20.sol) and
-[helper token factory](contracts/protocol/TokenFactoryV1.sol) allowing the super cheap deployments of the
+[helper generic factory](contracts/protocol/GenericFactoryV1.sol) allowing the super cheap deployments of the
 token implementation via the [EIP-1167 Minimal Proxy Contract](https://eips.ethereum.org/EIPS/eip-1167).
 
+## Frameworks and Tooling
 The project is built using
 * [Hardhat](https://hardhat.org/), a popular Ethereum development environment
     * Why not standalone [Truffle](https://www.trufflesuite.com/truffle)?
@@ -106,17 +107,17 @@ Following steps were tested to work in macOS Catalina
 ## Configuration ##
 1.  Create or import 12-word mnemonics for
     1. Mainnet
-    2. Goerli
+    2. Sepolia
     3. Polygon
     4. Mumbai (Polygon Testnet)
     5. Binance Smart Chain (BSC) Mainnet
     6. BSC Testnet
     7. Base Mainnet
-    8. Base Goerli (Testnet)
+    8. Base Sepolia (Testnet)
 
     You can use MetaMask to create mnemonics: https://metamask.io/
 
-    > Note: you can use same mnemonic for test networks (goerli, mumbai, bsc_testnet, and base_goerli).
+    > Note: you can use same mnemonic for test networks (sepolia, mumbai, bsc_testnet, and base_sepolia).
     Always use a separate one for mainnet, keep it secure.
 
     > Note: you can add more configurations to connect to the networks not listed above.
@@ -133,21 +134,21 @@ Following steps were tested to work in macOS Catalina
 4.  Export mnemonics, infura access key, and etherscan API key as system environment variables
     (they should be available for hardhat):
 
-    | Name          | Value                 |
-    |---------------|-----------------------|
-    | MNEMONIC1     | Mainnet mnemonic      |
-    | MNEMONIC5     | Goerli mnemonic       |
-    | MNEMONIC137   | Polygon mnemonic      |
-    | MNEMONIC80001 | Mumbai mnemonic       |
-    | MNEMONIC56    | BSC mnemonic          |
-    | MNEMONIC97    | BSC Testnet mnemonic  |
-    | MNEMONIC8453  | Base Mainnet mnemonic |
-    | MNEMONIC84531 | Base Goerli mnemonic  |
-    | INFURA_KEY    | Infura access key     |
-    | ETHERSCAN_KEY | Etherscan API key     |
-    | POLYSCAN_KEY  | polygonscan API key   |
-    | BSCSCAN_KEY   | BscScan API key       |
-    | BASESCAN_KEY  | BaseScan API key      |
+    | Name             | Value                 |
+    |------------------|-----------------------|
+    | MNEMONIC1        | Mainnet mnemonic      |
+    | MNEMONIC11155111 | Sepolia mnemonic      |
+    | MNEMONIC137      | Polygon mnemonic      |
+    | MNEMONIC80001    | Mumbai mnemonic       |
+    | MNEMONIC56       | BSC mnemonic          |
+    | MNEMONIC97       | BSC Testnet mnemonic  |
+    | MNEMONIC8453     | Base Mainnet mnemonic |
+    | MNEMONIC84532    | Base Seploia mnemonic |
+    | INFURA_KEY       | Infura access key     |
+    | ETHERSCAN_KEY    | Etherscan API key     |
+    | POLYSCAN_KEY     | polygonscan API key   |
+    | BSCSCAN_KEY      | BscScan API key       |
+    | BASESCAN_KEY     | BaseScan API key      |
 
 > Note:  
 Read [How do I set an environment variable?](https://www.schrodinger.com/kb/1842) article for more info on how to
@@ -179,17 +180,17 @@ If both infura and alchemy keys are set, alchemy is used.
 
 1.  Create or import private keys of the accounts for
     1. Mainnet
-    2. Goerli
+    2. Sepolia
     3. Polygon
     4. Mumbai (Polygon Testnet)
     5. Binance Smart Chain (BSC) Mainnet
     6. BSC Testnet
     7. Base Mainnet
-    8. Base Goerli (Testnet)
+    8. Base Sepolia (Testnet)
 
     You can use MetaMask to export private keys: https://metamask.io/
 
-    > Note: you can use the same private key for test networks (goerli, mumbai, bsc_testnet, and base_goerli).
+    > Note: you can use the same private key for test networks (sepolia, mumbai, bsc_testnet, and base_sepolia).
     Always use a separate one for mainnet, keep it secure.
 
 2.  Create an alchemy API key at https://alchemy.com/
@@ -202,13 +203,13 @@ If both infura and alchemy keys are set, alchemy is used.
     | Name          | Value                    |
     |---------------|--------------------------|
     | P_KEY1        | Mainnet private key      |
-    | P_KEY5        | Goerli private key       |
+    | P_KEY11155111 | Sepolia private key      |
     | P_KEY137      | Polygon private key      |
     | P_KEY80001    | Mumbai private key       |
     | P_KEY56       | BSC private key          |
     | P_KEY97       | BSC Testnet private key  |
     | P_KEY8453     | Base Mainnet private key |
-    | P_KEY84531    | Base Goerli private key  |
+    | P_KEY84532    | Base Sepolia private key |
     | ALCHEMY_KEY   | Alchemy API key          |
     | ETHERSCAN_KEY | Etherscan API key        |
     | POLYSCAN_KEY  | polygonscan API key      |
@@ -238,16 +239,16 @@ export BASESCAN_KEY="RJ4QYXFB9G34VZLLEL6QHCHZ9ZSK9E0R8A"
 To use custom JSON-RPC endpoint instead of infura/alchemy public endpoints, set the corresponding RPC URL as
 an environment variable:
 
-| Name                | Value                              |
-|---------------------|------------------------------------|
-| MAINNET_RPC_URL     | Mainnet JSON-RPC endpoint URL      |
-| GOERLI_RPC_URL      | Goerli JSON-RPC endpoint URL       |
-| POLYGON_RPC_URL     | Polygon JSON-RPC endpoint URL      |
-| MUMBAI_RPC_URL      | Mumbai JSON-RPC endpoint URL       |
-| BSC_RPC_URL         | BSC JSON-RPC endpoint URL          |
-| BSC_TESTNET_RPC_URL | BSC Testnet JSON-RPC endpoint URL  |
-| BASE_RPC_URL        | Base Mainnet JSON-RPC endpoint URL |
-| BASE_GOERLI_RPC_URL | Base Goerli JSON-RPC endpoint URL  |
+| Name                 | Value                              |
+|----------------------|------------------------------------|
+| MAINNET_RPC_URL      | Mainnet JSON-RPC endpoint URL      |
+| SEPOLIA_RPC_URL      | Sepolia JSON-RPC endpoint URL      |
+| POLYGON_RPC_URL      | Polygon JSON-RPC endpoint URL      |
+| MUMBAI_RPC_URL       | Mumbai JSON-RPC endpoint URL       |
+| BSC_RPC_URL          | BSC JSON-RPC endpoint URL          |
+| BSC_TESTNET_RPC_URL  | BSC Testnet JSON-RPC endpoint URL  |
+| BASE_RPC_URL         | Base Mainnet JSON-RPC endpoint URL |
+| BASE_SEPOLIA_RPC_URL | Base Sepolia JSON-RPC endpoint URL |
 
 ## Compilation ##
 Execute ```npx hardhat compile``` command to compile smart contracts.
@@ -329,42 +330,42 @@ which were not executed in previous run(s).
 Deployment scripts are located under [deploy](./deploy) folder.
 Deployment execution state is saved under [deployments](./deployments) folder.
 
-To run fresh deployment (goerli):
+To run fresh deployment (sepolia):
 
-1. Delete [deployments/goerli](./deployments/goerli) folder contents.
+1. Delete [deployments/sepolia](./deployments/sepolia) folder contents.
 
 2. Run the deployment of interest with the ```npx hardhat deploy``` command
     ```
-    npx hardhat deploy --network goerli --tags v1_0
+    npx hardhat deploy --network sepolia --tags deploy-TokenFactoryV1
     ```
-    where ```v1_0``` specifies the deployment script(s) tag to run,
-    and ```--network goerli``` specifies the network to run script for
+    where ```deploy-TokenFactoryV1``` specifies the deployment script(s) tag to run,
+    and ```--network sepolia``` specifies the network to run script for
     (see [hardhat.config.js](./hardhat.config.js) for network definitions).
 
-3. Verify source code on Etherscan with the ```npm run verify-goerli``` command
+3. Verify source code on Etherscan with the ```npm run verify-sepolia``` command
     ```
-    npm run verify-goerli
+    npm run verify-sepolia
     ```
 
 To rerun the deployment script and continue partially completed script skip the first step
 (do not cleanup the [deployments](./deployments) folder).
 
-To upgrade the contract(s) (goerli):
+To upgrade the contract(s) (sepolia):
 
 1. Delete the implementation deployment of the contract you wish to upgrade from the
-   [deployments/goerli](./deployments/goerli) folder
+   [deployments/sepolia](./deployments/sepolia) folder
 
 2. Run the upgrade script of interest with the ```npx hardhat deploy``` command
     ```
-    npx hardhat deploy --network goerli --tags upgrade-TokenFactoryV1
+    npx hardhat deploy --network sepolia --tags upgrade-TokenFactoryV1
     ```
-   where ```upgrade-TokenFactoryV1``` specifies the upgrade script(s) tag to run,
-   and ```--network goerli``` specifies the network to run script for
-   (see [hardhat.config.js](./hardhat.config.js) for network definitions).
+    where ```upgrade-TokenFactoryV1``` specifies the upgrade script(s) tag to run,
+    and ```--network sepolia``` specifies the network to run script for
+    (see [hardhat.config.js](./hardhat.config.js) for network definitions).
 
-3. Verify source code on Etherscan with the ```npm run verify-goerli``` command
+3. Verify source code on Etherscan with the ```npm run verify-sepolia``` command
     ```
-    npm run verify-goerli
+    npm run verify-sepolia
     ```
 
 ## Contributing

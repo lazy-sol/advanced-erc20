@@ -5,9 +5,25 @@
  *     or
  *   - MNEMONIC1 – mainnet mnemonic, 12 words
  *
+ *   - P_KEY3 – ropsten private key, should start with 0x
+ *     or
+ *   - MNEMONIC3 – ropsten mnemonic, 12 words
+ *
+ *   - P_KEY4 – rinkeby private key, should start with 0x
+ *     or
+ *   - MNEMONIC4 – rinkeby mnemonic, 12 words
+ *
+ *   - P_KEY41 – kovan private key, should start with 0x
+ *     or
+ *   - MNEMONIC41 – kovan mnemonic, 12 words
+ *
  *   - P_KEY5 – goerli private key, should start with 0x
  *     or
  *   - MNEMONIC5 – goerli mnemonic, 12 words
+ *
+ *   - P_KEY11155111 – sepolia private key, should start with 0x
+ *     or
+ *   - MNEMONIC11155111 – sepolia mnemonic, 12 words
  *
  *   - P_KEY137 – polygon/matic private key, should start with 0x
  *     or
@@ -33,6 +49,10 @@
  *     or
  *   - MNEMONIC84531 – Base Goerli (testnet) Optimistic Rollup (L2) mnemonic, 12 words
  *
+ *   - P_KEY84532 – Base Sepolia (testnet) Optimistic Rollup (L2) private key, should start with 0x
+ *     or
+ *   - MNEMONIC84532 – Base Sepolia (testnet) Optimistic Rollup (L2) mnemonic, 12 words
+ *
  *   - ALCHEMY_KEY – Alchemy API key
  *     or
  *   - INFURA_KEY – Infura API key (Project ID)
@@ -44,10 +64,9 @@
  *   - BSCSCAN_KEY – BscScan API key
  *
  *   - BASESCAN_KEY – BaseScan API key
+ *
+ *   - REPORT_GAS - optional, set it to true to print gas usage info
  */
-
-// Loads env variables from .env file
-require("dotenv").config()
 
 // Enable Truffle 5 plugin for tests
 // https://hardhat.org/guides/truffle-testing.html
@@ -58,7 +77,7 @@ require("@nomiclabs/hardhat-truffle5");
 require("solidity-coverage");
 
 // enable hardhat-gas-reporter
-// https://hardhat.org/plugins/hardhat-gas-reporter.html
+// https://github.com/cgewecke/hardhat-gas-reporter
 // require("hardhat-gas-reporter");
 
 // compile Solidity sources directly from NPM dependencies
@@ -80,6 +99,30 @@ else if(process.env.P_KEY1 && !process.env.P_KEY1.startsWith("0x")) {
 	console.warn("P_KEY1 doesn't start with 0x. Appended 0x");
 	process.env.P_KEY1 = "0x" + process.env.P_KEY1;
 }
+if(!process.env.MNEMONIC3 && !process.env.P_KEY3) {
+	console.warn("neither MNEMONIC3 nor P_KEY3 is not set. Ropsten deployments won't be available");
+	process.env.MNEMONIC3 = FAKE_MNEMONIC;
+}
+else if(process.env.P_KEY3 && !process.env.P_KEY3.startsWith("0x")) {
+	console.warn("P_KEY3 doesn't start with 0x. Appended 0x");
+	process.env.P_KEY3 = "0x" + process.env.P_KEY3;
+}
+if(!process.env.MNEMONIC4 && !process.env.P_KEY4) {
+	console.warn("neither MNEMONIC4 nor P_KEY4 is not set. Rinkeby deployments won't be available");
+	process.env.MNEMONIC4 = FAKE_MNEMONIC;
+}
+else if(process.env.P_KEY4 && !process.env.P_KEY4.startsWith("0x")) {
+	console.warn("P_KEY4 doesn't start with 0x. Appended 0x");
+	process.env.P_KEY4 = "0x" + process.env.P_KEY4;
+}
+if(!process.env.MNEMONIC42 && !process.env.P_KEY42) {
+	console.warn("neither MNEMONIC42 nor P_KEY42 is not set. Kovan deployments won't be available");
+	process.env.MNEMONIC42 = FAKE_MNEMONIC;
+}
+else if(process.env.P_KEY42 && !process.env.P_KEY42.startsWith("0x")) {
+	console.warn("P_KEY42 doesn't start with 0x. Appended 0x");
+	process.env.P_KEY42 = "0x" + process.env.P_KEY42;
+}
 if(!process.env.MNEMONIC5 && !process.env.P_KEY5) {
 	console.warn("neither MNEMONIC5 nor P_KEY5 is not set. Goerli deployments won't be available");
 	process.env.MNEMONIC5 = FAKE_MNEMONIC;
@@ -87,6 +130,14 @@ if(!process.env.MNEMONIC5 && !process.env.P_KEY5) {
 else if(process.env.P_KEY5 && !process.env.P_KEY5.startsWith("0x")) {
 	console.warn("P_KEY5 doesn't start with 0x. Appended 0x");
 	process.env.P_KEY5 = "0x" + process.env.P_KEY5;
+}
+if(!process.env.MNEMONIC11155111 && !process.env.P_KEY11155111) {
+	console.warn("neither MNEMONIC11155111 nor P_KEY11155111 is not set. Sepolia deployments won't be available");
+	process.env.MNEMONIC11155111 = FAKE_MNEMONIC;
+}
+else if(process.env.P_KEY11155111 && !process.env.P_KEY11155111.startsWith("0x")) {
+	console.warn("P_KEY11155111 doesn't start with 0x. Appended 0x");
+	process.env.P_KEY11155111 = "0x" + process.env.P_KEY11155111;
 }
 if(!process.env.MNEMONIC137 && !process.env.P_KEY137) {
 	console.warn("neither MNEMONIC137 nor P_KEY137 is not set. Polygon mainnet deployments won't be available");
@@ -136,6 +187,14 @@ else if(process.env.P_KEY84531 && !process.env.P_KEY84531.startsWith("0x")) {
 	console.warn("P_KEY84531 doesn't start with 0x. Appended 0x");
 	process.env.P_KEY84531 = "0x" + process.env.P_KEY84531;
 }
+if(!process.env.MNEMONIC84532 && !process.env.P_KEY84532) {
+	console.warn("neither MNEMONIC84532 nor P_KEY84532 is not set. Base Sepolia (testnet) deployments won't be available");
+	process.env.MNEMONIC84531 = FAKE_MNEMONIC;
+}
+else if(process.env.P_KEY84532 && !process.env.P_KEY84532.startsWith("0x")) {
+	console.warn("P_KEY84532 doesn't start with 0x. Appended 0x");
+	process.env.P_KEY84532 = "0x" + process.env.P_KEY84532;
+}
 if(!process.env.INFURA_KEY && !process.env.ALCHEMY_KEY) {
 	console.warn("neither INFURA_KEY nor ALCHEMY_KEY is not set. Deployments may not be available");
 	process.env.INFURA_KEY = "";
@@ -155,6 +214,7 @@ if(!process.env.BSCSCAN_KEY) {
 }
 if(!process.env.BASESCAN_KEY) {
 	console.warn("BASESCAN_KEY is not set. Deployed smart contract code verification won't be available on BaseScan");
+	process.env.BASESCAN_KEY = "";
 }
 
 /**
@@ -186,10 +246,30 @@ module.exports = {
 			url: get_endpoint_url("mainnet"),
 			accounts: get_accounts(process.env.P_KEY1, process.env.MNEMONIC1),
 		},
+		// https://ropsten.etherscan.io/
+		ropsten: {
+			url: get_endpoint_url("ropsten"),
+			accounts: get_accounts(process.env.P_KEY3, process.env.MNEMONIC3),
+		},
+		// https://rinkeby.etherscan.io/
+		rinkeby: {
+			url: get_endpoint_url("rinkeby"),
+			accounts: get_accounts(process.env.P_KEY4, process.env.MNEMONIC4),
+		},
+		// https://kovan.etherscan.io/
+		kovan: {
+			url: get_endpoint_url("kovan"),
+			accounts: get_accounts(process.env.P_KEY42, process.env.MNEMONIC42),
+		},
 		// https://goerli.etherscan.io/
 		goerli: {
 			url: get_endpoint_url("goerli"),
 			accounts: get_accounts(process.env.P_KEY5, process.env.MNEMONIC5),
+		},
+		// https://sepolia.etherscan.io/
+		sepolia: {
+			url: get_endpoint_url("sepolia"),
+			accounts: get_accounts(process.env.P_KEY11155111, process.env.MNEMONIC11155111),
 		},
 		// matic/polygon L2 mainnet
 		// https://polygonscan.com/
@@ -222,6 +302,11 @@ module.exports = {
 		base_goerli: {
 			url: get_endpoint_url("base_goerli"),
 			accounts: get_accounts(process.env.P_KEY84531, process.env.MNEMONIC84531),
+		},
+		// Base Testnet Optimistic Rollup (L2)
+		base_sepolia: {
+			url: get_endpoint_url("base_sepolia"),
+			accounts: get_accounts(process.env.P_KEY84532, process.env.MNEMONIC84532),
 		},
 	},
 
@@ -297,6 +382,9 @@ function get_endpoint_url(network_name) {
 	if(process.env.GOERLI_RPC_URL && network_name === "goerli") {
 		return process.env.GOERLI_RPC_URL;
 	}
+	if(process.env.SEPOLIA_RPC_URL && network_name === "sepolia") {
+		return process.env.SEPOLIA_RPC_URL;
+	}
 	if(process.env.POLYGON_RPC_URL && network_name === "polygon") {
 		return process.env.POLYGON_RPC_URL;
 	}
@@ -315,6 +403,9 @@ function get_endpoint_url(network_name) {
 	if(process.env.BASE_GOERLI_RPC_URL && network_name === "base_goerli") {
 		return process.env.BASE_GOERLI_RPC_URL;
 	}
+	if(process.env.BASE_SEPOLIA_RPC_URL && network_name === "base_sepolia") {
+		return process.env.BASE_SEPOLIA_RPC_URL;
+	}
 
 	// try the alchemy next
 	// create a key: https://www.alchemy.com/
@@ -325,10 +416,12 @@ function get_endpoint_url(network_name) {
 			case "rinkeby": return "https://eth-rinkeby.alchemyapi.io/v2/" + process.env.ALCHEMY_KEY;
 			case "kovan": return "https://eth-kovan.alchemyapi.io/v2/" + process.env.ALCHEMY_KEY;
 			case "goerli": return "https://eth-goerli.alchemyapi.io/v2/" + process.env.ALCHEMY_KEY;
+			case "sepolia": return "https://eth-sepolia.alchemyapi.io/v2/" + process.env.ALCHEMY_KEY;
 			case "polygon": return "https://polygon-mainnet.g.alchemy.com/v2/" + process.env.ALCHEMY_KEY;
 			case "mumbai": return "https://polygon-mumbai.g.alchemy.com/v2/" + process.env.ALCHEMY_KEY;
 			case "base_mainnet": return "https://base-mainnet.g.alchemy.com/v2/" + process.env.ALCHEMY_KEY;
 			case "base_goerli": return "https://base-goerli.g.alchemy.com/v2/" + process.env.ALCHEMY_KEY;
+			case "base_sepolia": return "https://base-sepolia.g.alchemy.com/v2/" + process.env.ALCHEMY_KEY;
 		}
 	}
 
@@ -341,6 +434,7 @@ function get_endpoint_url(network_name) {
 			case "rinkeby": return "https://rinkeby.infura.io/v3/" + process.env.INFURA_KEY;
 			case "kovan": return "https://kovan.infura.io/v3/" + process.env.INFURA_KEY;
 			case "goerli": return "https://goerli.infura.io/v3/" + process.env.INFURA_KEY;
+			case "sepolia": return "https://sepolia.infura.io/v3/" + process.env.INFURA_KEY;
 			case "polygon": return "https://polygon-mainnet.infura.io/v3/" + process.env.INFURA_KEY;
 			case "mumbai": return "https://polygon-mumbai.infura.io/v3/" + process.env.INFURA_KEY;
 		}
@@ -356,6 +450,7 @@ function get_endpoint_url(network_name) {
 		case "opBnb_testnet": return "https://opbnb-testnet.nodereal.io/v1/9989d39cb7484ee9abcec2132a242315";
 		case "base_mainnet": return "https://mainnet.base.org";
 		case "base_goerli": return "https://goerli.base.org";
+		case "base_sepolia": return "https://sepolia.base.org";
 	}
 
 	// fallback to default JSON_RPC_URL (if set)

@@ -78,8 +78,8 @@ cache/
 !/artifacts/contracts/token/AdvancedERC20.sol/AdvancedERC20.json
 !/artifacts/contracts/protocol/
 /artifacts/contracts/protocol/**
-!/artifacts/contracts/protocol/TokenFactoryV1.sol/
-!/artifacts/contracts/protocol/TokenFactoryV1.sol/TokenFactoryV1.json
+!/artifacts/contracts/protocol/GenericFactoryV1.sol/
+!/artifacts/contracts/protocol/GenericFactoryV1.sol/GenericFactoryV1.json
 
 # etc
 *.log

@@ -43,7 +43,7 @@ or otherwise improve the project, pull requests are most welcome.
 
 Any code is committed to `develop`, `main`, or `master` branches through pull requests.
 
-The code should comply with [Style Guides](docs/style_guides1.md), [Design Principles](#design-principles),
+The code should comply with [Style Guides](docs/style_guides.md), [Design Principles](#design-principles),
 [Frameworks and Tooling Conventions](#frameworks-and-tooling-conventions).
 
 Our pull request template contains a [checklist](docs/pull_request_template.md)
@@ -128,10 +128,10 @@ Please follow these steps to have your contribution considered by the maintainer
 1. Verify that your pull request contain only the changes related to the issue it solves;
    if you find the opposite, split it into separate pull requests, so that each of them
    corresponds to exactly one issue or feature
-2. Make sure you follow the [Style Guides](docs/style_guides1.md),
+2. Make sure you follow the [Style Guides](docs/style_guides.md),
    [Design Principles](#design-principles),
    [Frameworks and Tooling Conventions](#frameworks-and-tooling-conventions), and
-   [Commit Policy](docs/commit_policy_gitlab.md)
+   [Commit Policy](docs/commit_policy.md)
 3. Ensure that all existing tests pass, and that code coverage has not diminished
 4. Write any new tests to cover your added functionality
    1. Test coverage must not be formal, but functional
@@ -162,13 +162,13 @@ Public submission of features may not always be approved if they do not align wi
 This section describes in detail branch and commit naming, opening a pull request, reviewing it, merging, and other
 topics related to the development workflow.
 
-It is available as a separate document [Where and How to Commit Your Work](docs/commit_policy_gitlab.md)
+It is available as a separate document [Where and How to Commit Your Work](docs/commit_policy.md)
 
 ### Style Guides
 
 This section describes in detail programming conventions, style, and best practices for writing code, tests, etc..
 
-It is available as a separate document [Style Guides](docs/style_guides1.md)
+It is available as a separate document [Style Guides](docs/style_guides.md)
 
 ## Audit Guide
 

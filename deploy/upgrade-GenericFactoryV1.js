@@ -1,16 +1,8 @@
-// deploy: npx hardhat deploy --network mumbai --tags upgrade-TokenFactoryV1_1
-// verify: npx hardhat etherscan-verify --network mumbai
+// upgrade: npx hardhat deploy --network sepolia --tags upgrade-GenericFactoryV1
 
 // script is built for hardhat-deploy plugin:
 // A Hardhat Plugin For Replicable Deployments And Easy Testing
 // https://www.npmjs.com/package/hardhat-deploy
-
-// Zeppelin helper constants
-const {
-	ZERO_ADDRESS,
-	ZERO_BYTES32,
-	MAX_UINT256,
-} = require("@openzeppelin/test-helpers/src/constants");
 
 // deployment utils (contract state printers)
 const {
@@ -33,17 +25,17 @@ module.exports = async function({deployments, getChainId, getNamedAccounts, getU
 	console.log("network %o %o", chainId, network.name);
 	console.log("accounts: %o, service account %o, nonce: %o, balance: %o ETH", accounts.length, A0, nonce, print_amt(balance));
 
-	// TokenFactory ERC1967Proxy
+	// Upgrade GenericFactory ERC1967Proxy
 	{
 		// get deployment details
-		const v1_deployment = await deployments.get("TokenFactoryV1");
+		const v1_deployment = await deployments.get("GenericFactoryV1");
 		const v1_contract = new web3.eth.Contract(v1_deployment.abi, v1_deployment.address);
 
 		// print v1.1 deployment details
 		await print_contract_details(A0, v1_deployment.abi, v1_deployment.address);
 
 		// get proxy deployment details
-		const proxy_deployment = await deployments.get("TokenFactory_Proxy");
+		const proxy_deployment = await deployments.get("GenericFactory_Proxy");
 		const proxy_contract = new web3.eth.Contract(v1_deployment.abi, proxy_deployment.address);
 
 		// print proxy deployment details
@@ -60,7 +52,7 @@ module.exports = async function({deployments, getChainId, getNamedAccounts, getU
 				to: proxy_deployment.address,
 				data: proxy_upgrade_data, // upgradeTo(v1_deployment.address)
 			});
-			console.log("TokenFactory_Proxy.upgradeTo(%o): %o", v1_deployment.address, receipt.transactionHash);
+			console.log("GenericFactory_Proxy.upgradeTo(%o): %o", v1_deployment.address, receipt.transactionHash);
 		}
 	}
 };
@@ -70,5 +62,5 @@ module.exports = async function({deployments, getChainId, getNamedAccounts, getU
 // Then if another deploy script has such tag as a dependency, then when the latter deploy script has a specific tag
 // and that tag is requested, the dependency will be executed first.
 // https://www.npmjs.com/package/hardhat-deploy#deploy-scripts-tags-and-dependencies
-module.exports.tags = ["upgrade-TokenFactoryV1", "upgrade", "v1_0"];
-module.exports.dependencies = ["TokenFactoryV1", "TokenFactory_Proxy"];
+module.exports.tags = ["upgrade-GenericFactoryV1", "upgrade", "v1_0"];
+module.exports.dependencies = ["GenericFactoryV1", "GenericFactory_Proxy"];

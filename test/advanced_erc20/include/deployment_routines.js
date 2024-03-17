@@ -103,6 +103,9 @@ async function erc1363_deploy_acceptor(a0) {
 
 // export public deployment API
 module.exports = {
+	NAME,
+	SYMBOL,
+	TOTAL_SUPPLY: S0,
 	advanced_erc20_deploy,
 	advanced_erc20_deploy_restricted,
 	advanced_erc20_deploy_detached,

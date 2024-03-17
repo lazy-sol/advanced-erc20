@@ -1,16 +1,22 @@
-// deploy: npx hardhat deploy --network mumbai --tags AdvancedERC20_Impl
-// verify: npx hardhat etherscan-verify --network mumbai --api-key $POLYSCAN_KEY
+// deploy: npx hardhat deploy --network sepolia --tags AdvancedERC20_Impl
+// verify: npx hardhat etherscan-verify --network sepolia --api-key $ETHERSCAN_KEY
 
 // script is built for hardhat-deploy plugin:
 // A Hardhat Plugin For Replicable Deployments And Easy Testing
 // https://www.npmjs.com/package/hardhat-deploy
 
-// Zeppelin helper constants
+// Zeppelin test helpers
+const {
+	BN,
+	constants,
+	expectEvent,
+	expectRevert,
+} = require("@lazy-sol/zeppelin-test-helpers");
 const {
 	ZERO_ADDRESS,
 	ZERO_BYTES32,
 	MAX_UINT256,
-} = require("@openzeppelin/test-helpers/src/constants");
+} = constants;
 
 // deployment utils (contract state printers)
 const {

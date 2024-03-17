@@ -4,7 +4,6 @@ pragma solidity ^0.8.4;
 import "../interfaces/ERC1363Spec.sol";
 import "../interfaces/EIP2612.sol";
 import "../interfaces/EIP3009.sol";
-import "../lib/AddressUtils.sol";
 import "../lib/ECDSA.sol";
 
 import "@lazy-sol/access-control-upgradeable/contracts/InitializableAccessControl.sol";
@@ -41,6 +40,8 @@ import "@lazy-sol/access-control-upgradeable/contracts/InitializableAccessContro
  *        without having an ETH to pay gas fees
  *      - EIP-3009: Transfer With Authorization - improves user experience by allowing to use a token
  *        without having an ETH to pay gas fees
+ *
+ * @notice This smart contract can be used as is, but also can be inherited and used as a template.
  *
  * @dev Even though smart contract has mint() function which is used to mint initial token supply,
  *      the function is disabled forever after smart contract deployment by revoking `TOKEN_CREATOR`
@@ -119,16 +120,6 @@ import "@lazy-sol/access-control-upgradeable/contracts/InitializableAccessContro
  * @author Basil Gorin
  */
 contract AdvancedERC20 is ERC1363, MintableBurnableERC20, EIP2612, EIP3009, InitializableAccessControl {
-	/**
-	 * @dev Smart contract unique identifier, a random number
-	 *
-	 * @dev Should be regenerated each time smart contact source code is changed
-	 *      and changed smart contract itself is to be redeployed
-	 *
-	 * @dev Generated using https://www.random.org/bytes/
-	 */
-	uint256 public constant TOKEN_UID = 0x85852ae5a7cdee80493c98daa64f98f0cb54ed1def5bdc3f1c4a1feff79713d2;
-
 	/**
 	 * @notice Name of the token
 	 *
@@ -424,7 +415,7 @@ contract AdvancedERC20 is ERC1363, MintableBurnableERC20, EIP2612, EIP3009, Init
 	 *      see https://eips.ethereum.org/EIPS/eip-712#rationale-for-typehash
 	 *
 	 * @dev Note: we do not include version into the domain typehash/separator,
-	 *      it is implied version is concatenated to the name field, like "AdvancedERC20"
+	 *      it is implied version is concatenated to the name field, like "AdvancedERC20v1"
 	 */
 	// keccak256("EIP712Domain(string name,uint256 chainId,address verifyingContract)")
 	bytes32 public constant DOMAIN_TYPEHASH = 0x8cad95687ba82c2ce50e74f7b754645e5117c3a5bec8151c0726d5857980a866;
@@ -437,7 +428,7 @@ contract AdvancedERC20 is ERC1363, MintableBurnableERC20, EIP2612, EIP3009, Init
 	function DOMAIN_SEPARATOR() public view override returns(bytes32) {
 		// build the EIP-712 contract domain separator, see https://eips.ethereum.org/EIPS/eip-712#definition-of-domainseparator
 		// note: we specify contract version in its name
-		return keccak256(abi.encode(DOMAIN_TYPEHASH, keccak256(bytes("AdvancedERC20")), block.chainid, address(this)));
+		return keccak256(abi.encode(DOMAIN_TYPEHASH, keccak256(bytes("AdvancedERC20v1")), block.chainid, address(this)));
 	}
 
 	/**
@@ -588,11 +579,6 @@ contract AdvancedERC20 is ERC1363, MintableBurnableERC20, EIP2612, EIP3009, Init
 		uint256 _initialSupply,
 		uint256 _initialFeatures
 	) public initializer {
-		// this function can be executed only once,
-		// we're checking if token name and symbol are already set
-		// to check if the contract was already initialized
-		require(bytes(name).length == 0, "already initialized");
-
 		// verify name and symbol are set
 		require(bytes(_name).length > 0, "token name is not set");
 		require(bytes(_symbol).length > 0, "token symbol is not set");
@@ -826,7 +812,7 @@ contract AdvancedERC20 is ERC1363, MintableBurnableERC20, EIP2612, EIP3009, Init
 	 */
 	function _notifyTransferred(address _from, address _to, uint256 _value, bytes memory _data, bool allowEoa) private {
 		// if recipient `_to` is EOA
-		if(!AddressUtils.isContract(_to)) {
+		if(_to.code.length == 0) { // !AddressUtils.isContract(_to)
 			// ensure EOA recipient is allowed
 			require(allowEoa, "EOA recipient");
 
@@ -855,7 +841,7 @@ contract AdvancedERC20 is ERC1363, MintableBurnableERC20, EIP2612, EIP3009, Init
 	 */
 	function _notifyApproved(address _spender, uint256 _value, bytes memory _data) private {
 		// ensure recipient is not EOA
-		require(AddressUtils.isContract(_spender), "EOA spender");
+		require(_spender.code.length > 0, "EOA spender"); // AddressUtils.isContract(_spender)
 
 		// otherwise - if `_to` is a contract - execute onApprovalReceived
 		bytes4 response = ERC1363Spender(_spender).onApprovalReceived(msg.sender, _value, _data);
