@@ -50,9 +50,20 @@ and [HD Wallet](https://www.npmjs.com/package/@truffle/hdwallet-provider)
 ## Repository Description ##
 What's inside?
 
-* Advanced ERC20 token, the base for
-  * ERC20 tokens created via the token factory
-* Token Factory (Upgradeable)
+* Advanced ERC20 token implementation
+* Generic Factory (Upgradeable) implementation
+
+## Running the UI ##
+1. Install http-server globally using `npm`:
+    ```
+    npm install -g http-server
+    ```
+2. Run the `http-server` command:
+    ```
+    http-server
+    ```
+
+3. Open [http://localhost:8080/ui.html](http://localhost:8080/ui.html) in Google Chrome
 
 ## Installation ##
 
@@ -143,7 +154,7 @@ Following steps were tested to work in macOS Catalina
     | MNEMONIC56       | BSC mnemonic          |
     | MNEMONIC97       | BSC Testnet mnemonic  |
     | MNEMONIC8453     | Base Mainnet mnemonic |
-    | MNEMONIC84532    | Base Seploia mnemonic |
+    | MNEMONIC84532    | Base Sepolia mnemonic |
     | INFURA_KEY       | Infura access key     |
     | ETHERSCAN_KEY    | Etherscan API key     |
     | POLYSCAN_KEY     | polygonscan API key   |
@@ -336,9 +347,9 @@ To run fresh deployment (sepolia):
 
 2. Run the deployment of interest with the ```npx hardhat deploy``` command
     ```
-    npx hardhat deploy --network sepolia --tags deploy-TokenFactoryV1
+    npx hardhat deploy --network sepolia --tags deploy-GenericFactoryV1
     ```
-    where ```deploy-TokenFactoryV1``` specifies the deployment script(s) tag to run,
+    where ```deploy-GenericFactoryV1``` specifies the deployment script(s) tag to run,
     and ```--network sepolia``` specifies the network to run script for
     (see [hardhat.config.js](./hardhat.config.js) for network definitions).
 
@@ -357,9 +368,9 @@ To upgrade the contract(s) (sepolia):
 
 2. Run the upgrade script of interest with the ```npx hardhat deploy``` command
     ```
-    npx hardhat deploy --network sepolia --tags upgrade-TokenFactoryV1
+    npx hardhat deploy --network sepolia --tags upgrade-GenericFactoryV1
     ```
-    where ```upgrade-TokenFactoryV1``` specifies the upgrade script(s) tag to run,
+    where ```upgrade-GenericFactoryV1``` specifies the upgrade script(s) tag to run,
     and ```--network sepolia``` specifies the network to run script for
     (see [hardhat.config.js](./hardhat.config.js) for network definitions).
 

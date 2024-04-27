@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Advanced ERC20</title>
+	<!-- Include Web3.js from a CDN -->
+	<script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+	<style>
+		table#deployed_contracts {
+			width: 100%;
+			border-collapse: collapse;
+		}
+		table#deployed_contracts th, table#deployed_contracts td {
+			border: 1px solid grey;
+		}
+		/* Target the last row of 'td' elements in the table */
+		table#deployed_contracts tr td:last-child {
+			font-family: monospace;
+			cursor: pointer;
+		}
+		/* Target the first rows of 'td' elements in the table */
+		table#deployed_contracts tr td:not(:last-child) {
+			font-family: sans-serif;
+		}
+	</style>
+</head>
+<body>
+<fieldset id="root_container" style="display: none;"><legend id="connection_state" style="text-align: right;"></legend>
+<div id="main_app" style="display: none;">
+	<fieldset id="deployed_contracts_container" style="display: none;">
+		<legend>Deployed ERC20 Contracts</legend>
+		<table  id="deployed_contracts"><tr><td>Loading...</td></tr></table>
+	</fieldset>
+	<fieldset><legend>Deploy New ERC20 Contract</legend>
+		<form onsubmit="deploy_contract(event)">
+		<table>
+			<tr>
+				<td><label for="token_name">ERC20 Token Name:</label></td>
+				<td>
+					<input id="token_name" type="text" required value="" size="31"/>
+					<input type="button" onclick="gen_name_symbol()" value="Generate"/>
+				</td>
+			</tr>
+			<tr>
+				<td><label for="token_symbol">ERC20 Token Symbol:</label></td>
+				<td><input id="token_symbol" type="text" required value="" size="7"/></td>
+			</tr>
+			<tr>
+				<td><label for="token_supply">Initial Supply:</label></td>
+				<td>
+					<input id="token_supply" type="number" required min="0" value="1000000"/>
+					<label><select id="token_supply_multiplier">
+						<option value="1">Wei</option>
+						<option value="1000000000">Gwei</option>
+						<option value="1000000000000000000" selected>Ether</option>
+						<option value="1000000000000000000000000000">GEther</option>
+					</select></label>
+				</td>
+			</tr>
+			<tr>
+				<td><label for="supply_holder">Initial Supply Holder:</label></td>
+				<td><input id="supply_holder" type="text" value="" size="42" style="font-family: monospace;"/></td>
+			</tr>
+			<tr>
+				<td><label for="contract_owner">Contract Owner:</label></td>
+				<td><input id="contract_owner" type="text" value="" size="42" style="font-family: monospace;"/></td>
+			</tr>
+			<tr>
+				<td><label for="contract_owner_role">Contract Owner Role:</label></td>
+				<td>
+					<input id="contract_owner_role" type="text" value="0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF" size="66" style="font-family: monospace;" readonly/>
+					<input type="button" title="Permissions Builder" value="⚙️" style="padding: 0 2px; cursor: not-allowed;" disabled/>
+				</td>
+			</tr>
+			<tr>
+				<td><label for="contract_features">Initially Enabled Features:</label></td>
+				<td>
+					<input id="contract_features" type="text" value="0xFFFFFFFF" size="10" style="font-family: monospace;"/>
+					<input type="button" title="Features Builder" value="⚙️" onclick="edit_features('contract_features')"  style="padding: 0 2px; cursor: pointer;"/>
+				</td>
+			</tr>
+			<tr><td></td><td><input type="submit" value="Deploy"/></td></tr>
+		</table>
+		<div id="deploy_tx" style="display: none;"></div>
+		</form>
+	</fieldset>
+	<fieldset><legend>Mint</legend>
+		<form onsubmit="mint_tokens(event)">
+		<table>
+			<tr>
+				<td><label for="mint_address">Contract Address:</label></td>
+				<td><input id="mint_address" type="text" required size="42" style="font-family: monospace;"/></td>
+			</tr>
+			<tr>
+				<td><label for="mint_to">Mint To (Holder):</label></td>
+				<td><input id="mint_to" type="text" required size="42" style="font-family: monospace;"/></td>
+			</tr>
+			<tr>
+				<td><label for="mint_amount">Amount:</label></td>
+				<td>
+					<input id="mint_amount" type="number" required min="1" value="1"/>
+					<label><select id="mint_amount_multiplier">
+						<option value="1">Wei</option>
+						<option value="1000000000">Gwei</option>
+						<option value="1000000000000000000" selected>Ether</option>
+						<option value="1000000000000000000000000000">GEther</option>
+					</select></label>
+				</td>
+			</tr>
+			<tr><td></td><td><input type="submit" value="Mint"/></td></tr>
+		</table>
+		<div id="mint_tx" style="display: none;"></div>
+		</form>
+	</fieldset>
+	<fieldset><legend>Burn</legend>
+		<form onsubmit="burn_tokens(event)">
+		<table>
+			<tr>
+				<td><label for="burn_token_addr">Token Address:</label></td>
+				<td><input id="burn_token_addr" type="text" required size="42" style="font-family: monospace;"/></td>
+			</tr>
+			<tr>
+				<td><label for="burn_from">Burn From:</label></td>
+				<td><input id="burn_from" type="text" required size="42" style="font-family: monospace;"/></td>
+			</tr>
+			<tr>
+				<td><label for="burn_amount">Amount:</label></td>
+				<td>
+					<input id="burn_amount" type="number" required min="1" value="1"/>
+					<label><select id="burn_amount_multiplier">
+						<option value="1">Wei</option>
+						<option value="1000000000">Gwei</option>
+						<option value="1000000000000000000" selected>Ether</option>
+						<option value="1000000000000000000000000000">GEther</option>
+					</select></label>
+				</td>
+			</tr>
+			<tr><td></td><td><input type="submit" value="Burn"/></td></tr>
+		</table>
+		<div id="burn_tx" style="display: none;"></div>
+		</form>
+	</fieldset>
+	<fieldset><legend>Features and Extensions</legend>
+		<form onsubmit="update_features(event)">
+		<table>
+			<tr>
+				<td><label for="update_features_token_addr">Token Address:</label></td>
+				<td><input id="update_features_token_addr" type="text" required size="42" style="font-family: monospace;"/></td>
+			</tr>
+			<tr>
+				<td><label for="update_features_requested">Features Requested:</label></td>
+				<td>
+					<input id="update_features_requested" type="text" required size="10" style="font-family: monospace;"/>
+					<input type="button" title="Features Builder" value="⚙️" onclick="edit_features('update_features_requested')"  style="padding: 0 2px; cursor: pointer;"/>
+				</td>
+			</tr>
+			<tr><td></td><td><input type="submit" value="Update"></td></tr>
+		</table>
+		<div id="update_features_tx" style="display: none;"></div>
+		</form>
+	</fieldset>
+</div>
+</fieldset>
+<div style="position: fixed; left: 0; bottom: 0; margin: 0.1em 0.2em;">&copy; 2024 <a href="https://github.com/lazy-sol/">Lazy So[u]l</a></div>
+<div style="position: fixed; right: 0; bottom: 0; margin: 0.1em 0.2em; font-family: monospace;">
+	[Advanced ERC20]
+	[<a href="https://lazy-sol.github.io/tiny-erc721/ui.html">Tiny ERC721</a>]
+</div>
+</body>
+<script type="text/javascript">
+// verify if MetaMask is installed
+if(!window.ethereum) {
+	if(window.confirm("MetaMask is not installed. You will be redirected to the MetaMask installation page.")) {
+		window.setTimeout(function() {
+			window.location.href = "https://metamask.io/download/";
+		}, 0);
+	}
+	window.stop();
+}
+</script>
+
+<script type="text/javascript">
+// Vocabulary
+const VOCABULARY = {
+	adjective1: ["Radiant", "Serene", "Tranquil", "Vibrant", "Luminous", "Ethereal", "Blissful", "Harmonious", "Majestic", "Sparkling", "Whimsical", "Enchanting", "Mystical", "Serendipitous", "Breathtaking", "Glorious", "Verdant", "Captivating", "Delightful", "Resplendent", "Opulent", "Soothing", "Alluring", "Idyllic", "Effervescent", "Zen", "Enigmatic", "Exquisite", "Celestial", "Pristine", "Dreamy", "Vivid", "Captivating", "Blissful", "Whimsical", "Serenity", "Mystical", "Luminous", "Harmonious", "Radiant", "Tranquil", "Verdant", "Ethereal", "Sparkling", "Delightful", "Glorious", "Resplendent", "Opulent", "Soothing", "Alluring", "Idyllic", "Effervescent", "Zen", "Enigmatic", "Exquisite", "Celestial", "Pristine", "Dreamy", "Vivid", "Captivating", "Blissful", "Whimsical", "Serenity", "Mystical", "Luminous", "Harmonious", "Radiant", "Tranquil", "Verdant", "Ethereal", "Sparkling", "Delightful", "Glorious", "Resplendent", "Opulent", "Soothing", "Alluring", "Idyllic", "Effervescent", "Zen", "Enigmatic", "Exquisite", "Celestial", "Pristine", "Dreamy"],
+	adjective2: ["Daring", "Bold", "Dynamic", "Adventurous", "Spirited", "Brave", "Courageous", "Energetic", "Fearless", "Tenacious", "Robust", "Vigorous", "Audacious", "Resilient", "Ambitious", "Fierce", "Valiant", "Intrepid", "Stalwart", "Gallant", "Unyielding", "Determined", "Strong", "Mighty", "Indomitable", "Heroic", "Daring", "Dynamic", "Adventurous", "Spirited", "Brave", "Courageous", "Energetic", "Tenacious", "Robust", "Vigorous", "Audacious", "Resilient", "Ambitious", "Fierce", "Valiant", "Intrepid", "Stalwart", "Gallant", "Unyielding", "Determined", "Strong", "Mighty", "Indomitable", "Heroic", "Daring", "Dynamic", "Adventurous", "Spirited", "Brave", "Courageous", "Energetic", "Tenacious", "Robust", "Vigorous", "Audacious", "Resilient", "Ambitious", "Fierce", "Valiant", "Intrepid", "Stalwart", "Gallant", "Unyielding", "Determined", "Strong", "Mighty", "Indomitable", "Heroic", "Daring", "Dynamic", "Adventurous", "Spirited", "Brave", "Courageous", "Energetic", "Tenacious", "Robust", "Vigorous", "Audacious", "Resilient", "Ambitious", "Fierce", "Valiant", "Intrepid", "Stalwart", "Gallant", "Unyielding", "Determined"],
+	noun1: ["Phoenix", "Cascade", "Nova", "Horizon", "Aurora", "Eclipse", "Oasis", "Nebula", "Prism", "Zenith", "Nexus", "Haven", "Citadel", "Crest", "Beacon", "Radiance", "Odyssey", "Sentinel", "Arch", "Vector", "Element", "Apex", "Echo", "Elysium", "Utopia", "Galaxy", "Dawn", "Aegis", "Mirage", "Sanctuary", "Chimera", "Celestia", "Serenity", "Phoenix", "Cascade", "Horizon", "Aurora", "Eclipse", "Nebula", "Prism", "Zenith", "Nexus", "Haven", "Citadel", "Crest", "Beacon", "Radiance", "Odyssey", "Sentinel", "Arch", "Vector", "Element", "Apex", "Echo", "Elysium", "Utopia", "Galaxy", "Dawn", "Aegis", "Mirage", "Sanctuary", "Chimera", "Celestia", "Serenity", "Phoenix", "Cascade", "Horizon", "Aurora", "Eclipse", "Nebula", "Prism", "Zenith", "Nexus", "Haven", "Citadel", "Crest", "Beacon", "Radiance", "Odyssey", "Sentinel", "Arch", "Vector", "Element", "Apex", "Echo", "Elysium", "Utopia", "Galaxy", "Dawn", "Aegis", "Mirage", "Sanctuary", "Chimera", "Celestia", "Serenity"],
+	generate_metadata: function() {
+		function pick_from(array) {
+			return array[Math.floor(Math.random() * array.length)];
+		}
+		const words = [pick_from(this.adjective1), pick_from(this.adjective2), pick_from(this.noun1)];
+		const name = words.join(" ");
+		const symbol = words.map(w => w.substring(0, 1)).join("");
+		return {name, symbol};
+	}
+};
+</script>
+
+<script type="text/javascript">
+// static HTML page anchors
+const root_container = document.getElementById("root_container");
+const connection_state = document.getElementById("connection_state");
+const main_app = document.getElementById("main_app");
+const deployed_contracts_container = document.getElementById("deployed_contracts_container");
+const deployed_contracts = document.getElementById("deployed_contracts");
+const token_name = document.getElementById("token_name");
+const token_symbol = document.getElementById("token_symbol");
+const token_supply = document.getElementById("token_supply");
+const token_supply_multiplier = document.getElementById("token_supply_multiplier");
+const supply_holder = document.getElementById("supply_holder");
+const contract_owner = document.getElementById("contract_owner");
+const contract_owner_role = document.getElementById("contract_owner_role");
+const contract_features = document.getElementById("contract_features");
+const deploy_tx = document.getElementById("deploy_tx");
+const mint_address = document.getElementById("mint_address");
+const mint_to = document.getElementById("mint_to");
+const mint_amount = document.getElementById("mint_amount");
+const mint_amount_multiplier = document.getElementById("mint_amount_multiplier");
+const mint_tx = document.getElementById("mint_tx");
+const burn_token_addr = document.getElementById("burn_token_addr");
+const burn_from = document.getElementById("burn_from");
+const burn_amount = document.getElementById("burn_amount");
+const burn_amount_multiplier = document.getElementById("burn_amount_multiplier");
+const burn_tx = document.getElementById("burn_tx");
+const update_features_token_addr = document.getElementById("update_features_token_addr");
+const update_features_requested = document.getElementById("update_features_requested");
+const update_features_tx = document.getElementById("update_features_tx");
+</script>
+
+<script type="text/javascript">
+// auxiliary pure functions
+
+// auxiliary function to log and display non-fatal error, doesn't stop execution
+function non_fatal_error(message, error) {
+	console.error("%s: %o", message, error);
+	window.alert(message + (error? ": " + json_stringify(error): ""));
+}
+
+// auxiliary function to log and display fatal error and stop execution
+function fatal_error(message, error) {
+	non_fatal_error("FATAL: " + message, error);
+	window.stop();
+	throw error? error: "error";
+}
+
+// function to load Solidity artifacts, hardhat deployment, any JSON
+async function load_json(path, json_processor) {
+	fetch(path).then(function(response) {
+		if(!response.ok) {
+			fatal_error("Failed to connect to artifact", response.statusText);
+		}
+		return response.json();
+	}).then(function(data) {
+		json_processor(data);
+	}).catch(function(e) {
+		fatal_error("Failed to load artifact", e);
+	});
+}
+
+// save JSON.stringify works properly with BigInt
+function json_stringify(input) {
+	return JSON.stringify(input, (key, value) =>
+		typeof value === 'bigint' ? value.toString() : value
+	);
+}
+</script>
+
+<script type="text/javascript">
+// config and app state
+
+// config stores settings which don't change
+const CONF = {
+	// supported networks, where our contracts are known to be deployed
+	chains: {
+		1: {
+			name: "Mainnet",
+			block_explorer: {
+				tx: "https://etherscan.io/tx/",
+				address: "https://etherscan.io/address/",
+				token: "https://etherscan.io/token/",
+			},
+			deployments_path: "./deployments/mainnet/",
+			// deployments are loaded asynchronously from the file system
+			deployments: {},
+		},
+		11155111: {
+			name: "Sepolia",
+			block_explorer: {
+				tx: "https://sepolia.etherscan.io/tx/",
+				address: "https://sepolia.etherscan.io/address/",
+				token: "https://sepolia.etherscan.io/token/",
+			},
+			deployments_path: "./deployments/sepolia/",
+			// deployments are loaded asynchronously from the file system
+			deployments: {},
+		},
+		8453: {
+			name: "Base",
+			block_explorer: {
+				tx: "https://basescan.org/tx/",
+				address: "https://basescan.org/address/",
+				token: "https://basescan.org/token/",
+			},
+			deployments_path: "./deployments/base_mainnet/",
+			// deployments are loaded asynchronously from the file system
+			deployments: {},
+		},
+		84532: {
+			name: "Base Sepolia",
+			block_explorer: {
+				tx: "https://sepolia.basescan.org//tx/",
+				address: "https://sepolia.basescan.org/address/",
+				token: "https://sepolia.basescan.org/token/",
+			},
+			deployments_path: "./deployments/base_sepolia/",
+			// deployments are loaded asynchronously from the file system
+			deployments: {},
+		},
+	},
+	// deployments (same across all the networks)
+	deployment_names: ["AdvancedERC20_Impl", "GenericFactoryV1", "GenericFactory_Proxy"],
+	load_deployments: function() {
+		for(const chain_id of Object.keys(this.chains)) {
+			for(const deployment_name of this.deployment_names) {
+				load_json(`${this.chains[chain_id].deployments_path}${deployment_name}.json`, function(deployment) {
+					console.log(`${deployment_name} deployment loaded`);
+					CONF.chains[chain_id].deployments[deployment_name] = deployment; // deployment.receipt.blockNumber;
+				});
+			}
+		}
+	},
+	deployments_loaded: function() {
+		for(const chain_id of Object.keys(this.chains)) {
+			for(const deployment_name of this.deployment_names) {
+				if(!this.chains[chain_id].deployments[deployment_name]) {
+					return false;
+				}
+			}
+		}
+		return true;
+	},
+};
+// load deployments (async)
+CONF.load_deployments();
+
+// state stores settings which may change due to user actions,
+// due to the async nature of the app, many incoming events, it makes sense to follow
+// the state of the app by listening to all the events and updating the state
+const STATE = {
+	// currently connected network (recognized decimal Chain ID)
+	chain_id: undefined,
+	// currently connected account (accounts[0])
+	A0: undefined,
+	// currently connected chain config
+	chain: function() {
+		return this.chain_id? CONF.chains[this.chain_id]: undefined;
+	},
+	// function to display the chain we're connected to
+	update_chain_id: function(chain_id) {
+		this.chain_id = chain_id? parseInt(chain_id): undefined;
+	},
+	// function to update currently connected account
+	update_A0: function(accounts) {
+		// MetaMask is locked or not connected
+		if(!accounts || !accounts.length) {
+			this.A0 = undefined;
+		}
+		else {
+			[this.A0] = accounts;
+		}
+	},
+	// function to refresh the connection state UI
+	refresh_ui: function() {
+		if(CONF.chains[this.chain_id]) {
+			if(this.A0) {
+				connection_state.innerHTML = `
+					Connected <span onclick="select_account('${this.A0}')"
+						style="font-family: monospace; cursor: pointer;">${this.A0}</span>
+				`;
+			}
+			else {
+				connection_state.innerHTML = `
+					MetaMask is not connected.
+					<input type="button" onclick="metamask_connect()" value="Connect"/>
+				`;
+			}
+		}
+		else if(this.chain_id) {
+			connection_state.innerHTML = `
+				Unsupported Chain ID: ${this.chain_id}
+				<input type="button" onclick="add_sepolia_network()" value="Switch to Sepolia"/>
+			`;
+		}
+		else {
+			connection_state.innerHTML = `
+				MetaMask disconnected.
+				<input type="button" onclick="metamask_connect()" value="Connect"/>
+			`;
+		}
+		root_container.style["display"] = "block";
+	},
+	// function to check if we're connected to supported network
+	connected: function() {
+		return this.chain() && this.A0;
+	},
+}
+</script>
+
+<script type="text/javascript">
+// main app section
+
+// define window.ethereum shortcut
+const ethereum = window.ethereum;
+// MetaMask is installed, create a new Web3 instance
+const web3 = new Web3(window.ethereum);
+
+// function to connect to MetaMask
+function metamask_connect() {
+	ethereum.request({ method: 'eth_requestAccounts' }).then(function(accounts) {
+		STATE.update_A0(accounts);
+		STATE.refresh_ui();
+		reload_main_app();
+	}).catch(function(e) {
+		non_fatal_error("Error connecting MetaMask", e);
+	});
+}
+
+// check if MetaMask is connected
+ethereum.request({ method: 'eth_accounts' }).then(function(accounts) {
+	// check current connected network
+	ethereum.request({ method: 'eth_chainId' }).then(function(chain_id) {
+		STATE.update_chain_id(chain_id);
+		STATE.update_A0(accounts);
+		STATE.refresh_ui();
+		const interval_id = window.setInterval(function() {
+			if(CONF.deployments_loaded()) {
+				console.log("all deployments loaded");
+				window.clearInterval(interval_id);
+				reload_main_app();
+			}
+		}, 50);
+	}).catch(function(e) {
+		fatal_error("Error getting Chain ID", e);
+	});
+}).catch(function(e) {
+	fatal_error("Error connecting to MetaMask", e);
+});
+
+// Handle the case when MetaMask connects another account
+ethereum.on('accountsChanged', function(accounts) {
+	console.log("account has been switched", accounts)
+	STATE.update_A0(accounts);
+	STATE.refresh_ui();
+	reload_main_app();
+});
+
+// Handle the case when MetaMask is connected
+ethereum.on('connect', function(connect_info) {
+	console.log('MetaMask has been connected', connect_info);
+	STATE.update_chain_id(connect_info.chainId);
+	STATE.refresh_ui();
+	reload_main_app();
+});
+
+// MetaMask disconnect listener
+ethereum.on('disconnect', function(error) {
+	console.warn('MetaMask has been disconnected', error);
+	STATE.update_A0();
+	STATE.update_chain_id();
+	STATE.refresh_ui();
+	reload_main_app();
+});
+
+// network switch listener
+ethereum.on('chainChanged', function(chain_id) {
+	console.log('network has been changed', chain_id)
+	STATE.update_chain_id(chain_id);
+	STATE.refresh_ui();
+	reload_main_app();
+});
+
+// define an async routine to switch the network to Sepolia
+async function add_sepolia_network() {
+	const sepolia_chain_id = '0xaa36a7'; // Hexadecimal chain ID for Sepolia
+
+	try {
+		// Check if Sepolia is already added
+		await ethereum.request({
+			method: 'wallet_switchEthereumChain',
+			params: [{ chainId: sepolia_chain_id }],
+		});
+	}
+	catch(e) {
+		// Error code 4902 indicates that the chain has not been added to MetaMask
+		if(e.code !== 4902) {
+			// Handle errors when switching the network
+			fatal_error("Error switching network to Sepolia", e)
+		}
+
+		try {
+			// Add the Sepolia network
+			await ethereum.request({
+				method: 'wallet_addEthereumChain',
+				params: [{
+					chainId: sepolia_chain_id,
+					rpcUrl: 'https://sepolia.infura.io/v3/',
+					chainName: 'Sepolia Test Network',
+					nativeCurrency: {
+						name: 'SepoliaETH',
+						symbol: 'SepoliaETH',
+						decimals: 18,
+					},
+					blockExplorerUrls: ['https://sepolia.etherscan.io/'],
+				}],
+			});
+		}
+		catch (e) {
+			// Handle errors when adding the network
+			fatal_error("Error adding Sepolia network", e);
+		}
+	}
+}
+
+// writes the entire deployed_contracts table
+function deployed_contracts_list_update(list) {
+	if(list && list.length) {
+		const table_body = list.map(render_contract_row).join("\n");
+		deployed_contracts.innerHTML = `<tr><th>Name</th><th>Symbol</th><th>Initial Supply</th><th>Address</th></tr>\n${table_body}`;
+		deployed_contracts_container.style["display"] = "block";
+	}
+	else {
+		deployed_contracts.innerHTML = "No contracts deployed yet.";
+		deployed_contracts_container.style["display"] = "none";
+	}
+}
+
+// adds one row to deployed_contracts table
+function deployed_contracts_list_add(contract) {
+	deployed_contracts.innerHTML += render_contract_row(contract);
+	deployed_contracts_container.style["display"] = "block";
+}
+
+// renders an HTML of the ERC20 list table row
+function render_contract_row(token) {
+	return `<tr><td>${token.name}</td><td>${token.symbol}</td><td>${token.supply}</td><td onclick="select_token('${token.address}');">${token.address}</td></tr>`;
+}
+
+// populates mint, burn, etc. inputs in the UI
+function select_account(A0) {
+	supply_holder.value = A0;
+	contract_owner.value = A0;
+	mint_to.value = A0;
+	burn_from.value = A0;
+}
+
+// populates token address in the UI
+function select_token(token_address) {
+	mint_address.value = token_address;
+	burn_token_addr.value = token_address;
+	update_features_token_addr.value = token_address;
+}
+
+// generates ERC20 name and symbol and updates the UI
+function gen_name_symbol() {
+	const {name, symbol} = VOCABULARY.generate_metadata();
+	token_name.value = name;
+	token_symbol.value = symbol;
+}
+
+// reloads the entire app, used when network or accounts have been changed
+function reload_main_app() {
+	if(!STATE.connected()) {
+		main_app.style["display"] = "none";
+		return;
+	}
+
+	deployed_contracts.innerHTML = "Loading contracts...";
+	factory_list_deployments().then(deployed_contracts_list_update).catch(function(e) {
+		console.warn("failed to load deployed ERC20 list", e);
+		deployed_contracts.innerHTML = "Failed to load deployed ERC20 list: " + e;
+		deployed_contracts_container.style["display"] = "block";
+	});
+
+	gen_name_symbol();
+
+	main_app.style["display"] = "block";
+}
+
+// decodes the bytes postConstruct data used to deploy the ERC20 contract
+function decode_post_construct_data(data) {
+	const {AdvancedERC20_Impl} = STATE.chain().deployments;
+	// Find the function definition in the ABI
+	const abi = AdvancedERC20_Impl.abi.find(entry => entry.name === "postConstruct");
+	// Decode the data
+	const decoded_data = web3.eth.abi.decodeParameters(abi.inputs, data.slice(10));
+	return {
+		owner: decoded_data._contractOwner,
+		name: decoded_data._name,
+		symbol: decoded_data._symbol,
+		supply: decoded_data._initialSupply,
+	};
+}
+
+// function to list already deployed ERC20 by currently connected address
+async function factory_list_deployments() {
+	const {AdvancedERC20_Impl, GenericFactoryV1, GenericFactory_Proxy} = STATE.chain().deployments;
+	const factory = new web3.eth.Contract(GenericFactoryV1.abi, GenericFactory_Proxy.address);
+	const events = await factory.getPastEvents("ProxyDeployed", {
+		filter: {
+			by: STATE.A0,
+			implAddress: AdvancedERC20_Impl.address,
+		},
+		fromBlock: GenericFactory_Proxy.receipt.blockNumber || "earliest",
+	});
+	console.log("getPastEvents", events);
+	return events.map(function(event) {
+		// data field which was fed into postConstruct
+		const data = event.returnValues["data"];
+		return Object.assign({address: event.returnValues["proxyAddress"]}, decode_post_construct_data(data));
+	});
+}
+
+// decodes first named event from the transaction receipt
+function decode_event(receipt, event_name, artifact) {
+	// The ABI for the event
+	const abi = artifact.abi.find(abi => abi.name === event_name && abi.type === 'event');
+	// Construct the event signature string
+	const event_sig = abi.name + '(' + abi.inputs.map(input => input.type).join(',') + ')';
+	// Find the log for the event
+	const log = receipt.logs.find(log => log.topics[0] === web3.utils.sha3(event_sig));
+	if(!log) {
+		return null;
+	}
+
+	// Decode the log and return event
+	return web3.eth.abi.decodeLog(
+		abi.inputs,
+		log.data,
+		log.topics.slice(1), // Exclude the event signature hash
+	);
+}
+
+// opens a Features Builder pop-up allowing to construct features bitmask
+function edit_features(element_id) {
+	const features_builder = window.open(
+		"features_builder.html?element_id=" + element_id,
+		"features_builder",
+		"popup=1,left=100,top=100,width=640,height=640"
+	);
+}
+
+// deploys ERC20 contract, always returns false since is used as a form submit listener
+function deploy_contract(e) {
+	if(e && e.preventDefault) {
+		e.preventDefault();
+	}
+
+	if(!token_name.value || !token_symbol.value) {
+		alert("Token Name and Symbol are required");
+		return false;
+	}
+	if(isNaN(parseInt(contract_features.value)) && isNaN(parseInt(contract_features.value, 16))) {
+		alert("Initially Enabled Features malformed. Try using builder.");
+		return false;
+	}
+	if(!STATE.connected()) {
+		alert("Not connected to the network. Please reload the page if the problem persists.")
+		return false;
+	}
+
+	if(!CONF.deployments_loaded()) {
+		non_fatal_error("Application is still loading. Please wait.");
+		return false;
+	}
+
+	const {A0} = STATE;
+	const {block_explorer} = STATE.chain();
+	const {AdvancedERC20_Impl, GenericFactoryV1, GenericFactory_Proxy} = STATE.chain().deployments;
+
+	const advanced_erc20 = new web3.eth.Contract(AdvancedERC20_Impl.abi);
+	const data = advanced_erc20.methods["postConstruct(address,string,string,address,uint256,uint256)"](
+		contract_owner.value || A0, // contract owner
+		token_name.value, // ERC20 name
+		token_symbol.value, // ERC20 symbol
+		supply_holder.value || A0, // initial supply holder
+		BigInt(token_supply.value || 0) * BigInt(token_supply_multiplier.value || 1), // initial supply
+		contract_features.value, // features
+	).encodeABI();
+	console.log("postConstruct.encodeABI", data);
+
+	const factory = new web3.eth.Contract(GenericFactoryV1.abi, GenericFactory_Proxy.address);
+	deploy_tx.style["display"] = "none";
+	factory.methods["clone(address,bytes)"](AdvancedERC20_Impl.address, data).send({from: A0})
+		.on("transactionHash", function(hash) {
+			console.log("deploy_contract transactionHash", hash);
+			const tx_link = block_explorer.tx + hash;
+			deploy_tx.innerHTML = `<a href="${tx_link}">${tx_link}</a>`;
+			deploy_tx.style["display"] = "block";
+		})
+/*
+		.on("confirmation", function(confirmation) {
+			console.log("confirmation", confirmation);
+		})
+*/
+		.on("receipt", function(receipt) {
+			if(!receipt.status || receipt.status === '0x0') {
+				// non_fatal_error("Transaction failed", receipt);
+				return;
+			}
+
+			console.log("deploy_contract receipt", receipt);
+
+			const decoded_event = decode_event(receipt, "ProxyDeployed", GenericFactoryV1);
+			console.log("decoded event", decoded_event);
+			if(!decoded_event) {
+				fatal_error('Unexpected transaction receipt: no "ProxyDeployed" event found');
+				return;
+			}
+
+			const {proxyAddress, data} = decoded_event;
+			deployed_contracts_list_add(Object.assign({address: proxyAddress}, decode_post_construct_data(data)));
+
+			const token_link = block_explorer.token + proxyAddress;
+			deploy_tx.innerHTML += `<br/>\n<a href="${token_link}">${token_link}</a>`;
+		})
+/*
+		.on("error", function(e) {
+			non_fatal_error("Deployment failed", e);
+		})
+*/
+		.catch(function(e) {
+			non_fatal_error("Deployment failed", e);
+		});
+
+	return false;
+}
+
+// mints tokens, always returns false since is used as a form submit listener
+function mint_tokens(e) {
+	if(e && e.preventDefault) {
+		e.preventDefault();
+	}
+
+	if(!mint_address.value || !mint_to.value || !mint_amount.value) {
+		alert("Token Address, Mint To, and Mint Amount are required");
+		return false;
+	}
+	if(!STATE.connected()) {
+		alert("Not connected to the network. Please reload the page if the problem persists.")
+		return false;
+	}
+
+	if(!CONF.deployments_loaded()) {
+		non_fatal_error("Application is still loading. Please wait.");
+		return false;
+	}
+
+	const {A0} = STATE;
+	const {block_explorer} = STATE.chain();
+	const {AdvancedERC20_Impl} = STATE.chain().deployments;
+
+	const advanced_erc20 = new web3.eth.Contract(AdvancedERC20_Impl.abi, mint_address.value);
+	const mint_method = advanced_erc20.methods["mint(address,uint256)"];
+	mint_tx.style["display"] = "none";
+	mint_method(mint_to.value, BigInt(mint_amount.value) * BigInt(mint_amount_multiplier.value)).send({from: A0})
+		.on("transactionHash", function(hash) {
+			console.log("mint_token transactionHash", hash);
+			const etherscan_link = block_explorer.tx + hash;
+			mint_tx.innerHTML = `<a href="${etherscan_link}">${etherscan_link}</a>`;
+			mint_tx.style["display"] = "block";
+		})
+/*
+		.on("confirmation", function(confirmation) {
+			console.log("confirmation", confirmation);
+		})
+*/
+		.on("receipt", function(receipt) {
+			if(!receipt.status || receipt.status === '0x0') {
+				// non_fatal_error("Transaction failed", receipt);
+				return;
+			}
+
+			console.log("mint_token receipt", receipt);
+
+			const decoded_event = decode_event(receipt, "Transfer", AdvancedERC20_Impl);
+			console.log("decoded event", decoded_event);
+			if(!decoded_event) {
+				fatal_error('Unexpected transaction receipt: no ERC20 "Transfer" event found');
+				return;
+			}
+
+			alert(`${decoded_event.value}\ntokens ${receipt.to}\nminted by ${receipt.from}\nto ${decoded_event.to}`);
+		})
+/*
+		.on("error", function(e) {
+			non_fatal_error("Mint failed", e);
+		})
+*/
+		.catch(function(e) {
+			non_fatal_error("Mint failed", e);
+		});
+
+	return false;
+}
+
+// burns tokens, always returns false since is used as a form submit listener
+function burn_tokens(e) {
+	if(e && e.preventDefault) {
+		e.preventDefault();
+	}
+
+	if(!burn_token_addr.value || !burn_from.value || !burn_amount.value) {
+		alert("Token Address, Burn From, and Burn Amount are required");
+		return false;
+	}
+	if(!STATE.connected()) {
+		alert("Not connected to the network. Please reload the page if the problem persists.")
+		return false;
+	}
+
+	if(!CONF.deployments_loaded()) {
+		non_fatal_error("Application is still loading. Please wait.");
+		return false;
+	}
+
+	const {A0} = STATE;
+	const {block_explorer} = STATE.chain();
+	const {AdvancedERC20_Impl} = STATE.chain().deployments;
+
+	const advanced_erc20 = new web3.eth.Contract(AdvancedERC20_Impl.abi, burn_token_addr.value);
+	const burn_method = advanced_erc20.methods["burn(address,uint256)"];
+	burn_tx.style["display"] = "none";
+	burn_method(burn_from.value, BigInt(burn_amount.value) * BigInt(burn_amount_multiplier.value)).send({from: A0})
+		.on("transactionHash", function(hash) {
+			console.log("burn_token transactionHash", hash);
+			const etherscan_link = block_explorer.tx + hash;
+			burn_tx.innerHTML = `<a href="${etherscan_link}">${etherscan_link}</a>`;
+			burn_tx.style["display"] = "block";
+		})
+/*
+		.on("confirmation", function(confirmation) {
+			console.log("confirmation", confirmation);
+		})
+*/
+		.on("receipt", function(receipt) {
+			if(!receipt.status || receipt.status === '0x0') {
+				// non_fatal_error("Transaction failed", receipt);
+				return;
+			}
+
+			console.log("burn_token receipt", receipt);
+			const decoded_event = decode_event(receipt, "Transfer", AdvancedERC20_Impl);
+			console.log("decoded event", decoded_event);
+			if(!decoded_event) {
+				fatal_error('Unexpected transaction receipt: no ERC20 "Transfer" event found');
+				return;
+			}
+
+			alert(`${decoded_event.value}\ntokens ${receipt.to}\nburnt by ${receipt.from}\nfrom ${decoded_event.from}`);
+		})
+/*
+		.on("error", function(e) {
+			non_fatal_error("Mint failed", e);
+		})
+*/
+		.catch(function(e) {
+			non_fatal_error("Burn failed", e);
+		});
+
+	return false;
+}
+
+// updates token contract features, always returns false since is used as a form submit listener
+function update_features(e) {
+	if(e && e.preventDefault) {
+		e.preventDefault();
+	}
+
+	if(!update_features_token_addr.value) {
+		alert("Token Address is required");
+		return false;
+	}
+	if(!STATE.connected()) {
+		alert("Not connected to the network. Please reload the page if the problem persists.")
+		return false;
+	}
+
+	if(!CONF.deployments_loaded()) {
+		non_fatal_error("Application is still loading. Please wait.");
+		return false;
+	}
+
+	const {A0} = STATE;
+	const {block_explorer} = STATE.chain();
+	const {AdvancedERC20_Impl} = STATE.chain().deployments;
+
+	const advanced_erc20 = new web3.eth.Contract(AdvancedERC20_Impl.abi, update_features_token_addr.value);
+	const update_features_method = advanced_erc20.methods["updateFeatures(uint256)"];
+
+	update_features_tx.style["display"] = "none";
+	update_features_method(update_features_requested.value).send({from: A0})
+		.on("transactionHash", function(hash) {
+			console.log("update_features transactionHash", hash);
+			const etherscan_link = block_explorer.tx + hash;
+			update_features_tx.innerHTML = `<a href="${etherscan_link}">${etherscan_link}</a>`;
+			update_features_tx.style["display"] = "block";
+		})
+/*
+		.on("confirmation", function(confirmation) {
+			console.log("confirmation", confirmation);
+		})
+*/
+		.on("receipt", function(receipt) {
+			if(!receipt.status || receipt.status === '0x0') {
+				// non_fatal_error("Transaction failed", receipt);
+				return;
+			}
+
+			console.log("update_features receipt", receipt);
+
+			const decoded_event = decode_event(receipt, "RoleUpdated", AdvancedERC20_Impl);
+			console.log("decoded event", decoded_event);
+			if(!decoded_event) {
+				fatal_error('Unexpected transaction receipt: no "RoleUpdated" event found');
+				return;
+			}
+
+			const requested = "0x" + parseInt(decoded_event.requested).toString(16);
+			const assigned = "0x" + parseInt(decoded_event.assigned).toString(16);
+			console.log("requested", decoded_event.requested, requested);
+			console.log("assigned", decoded_event.assigned, assigned);
+
+			alert(`${receipt.to} features set\nby ${receipt.from}\nto: ${assigned}`);
+		})
+/*
+		.on("error", function(e) {
+			non_fatal_error("Mint failed", e);
+		})
+*/
+		.catch(function(e) {
+			non_fatal_error("UpdateFeatures failed", e);
+		});
+
+	return false;
+}
+</script>
+</html>

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Features Builder</title>
+</head>
+<body>
+<form onsubmit="update_features(event)">
+<table>
+<tr><td></td><td>
+	<input type="button" onclick="select_all()" value="Select All">
+	<input type="button" onclick="select_none()" value="Select None">
+</td></tr>
+<tr>
+	<td><input id="FEATURE_TRANSFERS" type="checkbox" value="0x0000_0001"/></td>
+	<td><label for="FEATURE_TRANSFERS">FEATURE_TRANSFERS</label></td>
+</tr>
+<tr><td></td><td><label for="FEATURE_TRANSFERS">
+	Enables ERC20 transfers of the tokens (transfer by the token owner himself)</label></td></tr>
+<tr>
+	<td><input id="FEATURE_TRANSFERS_ON_BEHALF" type="checkbox" value="0x0000_0002"/></td>
+	<td><label for="FEATURE_TRANSFERS_ON_BEHALF">FEATURE_TRANSFERS_ON_BEHALF</label></td>
+</tr>
+<tr><td></td><td><label for="FEATURE_TRANSFERS_ON_BEHALF">
+	Enables ERC20 transfers on behalf (transfer by someone else on behalf of token owner)</label></td></tr>
+<tr>
+	<td><input id="FEATURE_UNSAFE_TRANSFERS" type="checkbox" value="0x0000_0004"/></td>
+	<td><label for="FEATURE_UNSAFE_TRANSFERS">FEATURE_UNSAFE_TRANSFERS</label></td>
+</tr>
+<tr><td></td><td><label for="FEATURE_UNSAFE_TRANSFERS">
+	Defines if the default behavior of `transfer` and `transferFrom` checks if the receiver smart contract supports ERC20 tokens</label></td></tr>
+<tr>
+	<td><input id="FEATURE_OWN_BURNS" type="checkbox" value="0x0000_0008"/></td>
+	<td><label for="FEATURE_OWN_BURNS">FEATURE_OWN_BURNS</label></td>
+</tr>
+<tr><td></td><td><label for="FEATURE_OWN_BURNS">
+	Enables token owners to burn their own tokens</label></td></tr>
+<tr>
+	<td><input id="FEATURE_BURNS_ON_BEHALF" type="checkbox" value="0x0000_0010"/></td>
+	<td><label for="FEATURE_BURNS_ON_BEHALF">FEATURE_BURNS_ON_BEHALF</label></td>
+</tr>
+<tr><td></td><td><label for="FEATURE_BURNS_ON_BEHALF">
+	Enables approved operators to burn tokens on behalf of their owners</label></td></tr>
+<tr>
+	<td><input id="FEATURE_DELEGATIONS" type="checkbox" value="0x0000_0020"/></td>
+	<td><label for="FEATURE_DELEGATIONS">FEATURE_DELEGATIONS</label></td>
+</tr>
+<tr><td></td><td><label for="FEATURE_DELEGATIONS">
+	Enables delegators to elect delegates</label></td></tr>
+<tr>
+	<td><input id="FEATURE_DELEGATIONS_ON_BEHALF" type="checkbox" value="0x0000_0040"/></td>
+	<td><label for="FEATURE_DELEGATIONS_ON_BEHALF">FEATURE_DELEGATIONS_ON_BEHALF</label></td>
+</tr>
+<tr><td></td><td><label for="FEATURE_DELEGATIONS_ON_BEHALF">
+	Enables delegators to elect delegates on behalf (via an EIP712 signature)</label></td></tr>
+<tr>
+	<td><input id="FEATURE_ERC1363_TRANSFERS" type="checkbox" value="0x0000_0080"/></td>
+	<td><label for="FEATURE_ERC1363_TRANSFERS">FEATURE_ERC1363_TRANSFERS</label></td>
+</tr>
+<tr><td></td><td><label for="FEATURE_ERC1363_TRANSFERS">
+	Enables ERC-1363 transfers with callback</label></td></tr>
+<tr>
+	<td><input id="FEATURE_ERC1363_APPROVALS" type="checkbox" value="0x0000_0100"/></td>
+	<td><label for="FEATURE_ERC1363_APPROVALS">FEATURE_ERC1363_APPROVALS</label></td>
+</tr>
+<tr><td></td><td><label for="FEATURE_ERC1363_APPROVALS">
+	Enables ERC-1363 approvals with callback</label></td></tr>
+<tr>
+	<td><input id="FEATURE_EIP2612_PERMITS" type="checkbox" value="0x0000_0200"/></td>
+	<td><label for="FEATURE_EIP2612_PERMITS">FEATURE_EIP2612_PERMITS</label></td>
+</tr>
+<tr><td></td><td><label for="FEATURE_EIP2612_PERMITS">
+	Enables approvals on behalf (EIP2612 permits via an EIP712 signature)</label></td></tr>
+<tr>
+	<td><input id="FEATURE_EIP3009_TRANSFERS" type="checkbox" value="0x0000_0400"/></td>
+	<td><label for="FEATURE_EIP3009_TRANSFERS">FEATURE_EIP3009_TRANSFERS</label></td>
+</tr>
+<tr><td></td><td><label for="FEATURE_EIP3009_TRANSFERS">
+	Enables meta transfers on behalf (EIP3009 transfers via an EIP712 signature)</label></td></tr>
+<tr>
+	<td><input id="FEATURE_EIP3009_RECEPTIONS" type="checkbox" value="0x0000_0800"/></td>
+	<td><label for="FEATURE_EIP3009_RECEPTIONS">FEATURE_EIP3009_RECEPTIONS</label></td>
+</tr>
+<tr><td></td><td><label for="FEATURE_EIP3009_RECEPTIONS">
+	Enables meta transfers on behalf (EIP3009 transfers via an EIP712 signature)</label></td></tr>
+<tr><td></td><td><input type="submit" value="Update and Close"></td></tr>
+</table>
+</form>
+</body>
+<script type="text/javascript">
+// features checkboxes collected as an array
+const features_arr = [
+	document.getElementById("FEATURE_TRANSFERS"),
+	document.getElementById("FEATURE_TRANSFERS_ON_BEHALF"),
+	document.getElementById("FEATURE_UNSAFE_TRANSFERS"),
+	document.getElementById("FEATURE_OWN_BURNS"),
+	document.getElementById("FEATURE_BURNS_ON_BEHALF"),
+	document.getElementById("FEATURE_DELEGATIONS"),
+	document.getElementById("FEATURE_DELEGATIONS_ON_BEHALF"),
+	document.getElementById("FEATURE_ERC1363_TRANSFERS"),
+	document.getElementById("FEATURE_ERC1363_APPROVALS"),
+	document.getElementById("FEATURE_EIP2612_PERMITS"),
+	document.getElementById("FEATURE_EIP3009_TRANSFERS"),
+	document.getElementById("FEATURE_EIP3009_RECEPTIONS"),
+];
+
+// Get the element ID from the query string
+const element_id = new URLSearchParams(window.location.search).get('element_id');
+const parent_input = window.opener.document.getElementById(element_id);
+
+// draw the correct initial state of the checkboxes
+function self_update() {
+	const features_value = parseInt(parent_input.value, 16);
+	features_arr.forEach(function(checkbox) {
+		const feature_value = parseInt(checkbox.value.replace(/_/g, ''), 16);
+		checkbox.checked = Boolean(features_value & feature_value);
+	});
+}
+self_update();
+
+function select_all() {
+	features_arr.forEach(checkbox => checkbox.checked = true);
+}
+
+function select_none() {
+	features_arr.forEach(checkbox => checkbox.checked = false);
+}
+
+// updates the features input on the parent and closes the popup
+function update_features() {
+	// calculate the number and print it
+	const features = features_arr
+		.filter(c => c.checked)
+		.map(c => parseInt(c.value.replace(/_/g, ''), 16))
+		.reduce((a, c) => a | c, 0);
+	const features_hex =  "0x" + features.toString(16).toUpperCase();
+	console.log("features requested", features, features_hex);
+
+	// update the features and close the popup
+	parent_input.value = features_hex;
+	window.close();
+}
+</script>
+</html>
