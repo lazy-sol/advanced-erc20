@@ -30,7 +30,7 @@ const {
 	draw_amounts,
 	print_booleans,
 	print_symbols,
-} = require("@lazy-sol/a-missing-gem/bn_utils");
+} = require("@lazy-sol/a-missing-gem");
 
 // token constants
 const {

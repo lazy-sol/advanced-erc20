@@ -1,10 +1,10 @@
 {
 	"name": "@lazy-sol/advanced-erc20",
-	"version": "1.0.5",
+	"version": "1.0.6",
 	"description": "Feature rich lightweight ERC20 implementation which is not based on the OpenZeppelin ERC20 implementation",
 	"main": "index.js",
 	"engines": {
-		"node": "^18.0.0"
+		"node": ">=18.0.0"
 	},
 	"scripts": {
 		"clean": "hardhat clean",
@@ -34,14 +34,14 @@
 	},
 	"homepage": "https://github.com/lazy-sol/advanced-erc20#readme",
 	"dependencies": {
-		"@lazy-sol/a-missing-gem": "^1.0.2",
-		"@lazy-sol/access-control-upgradeable": "^1.0.4",
+		"@lazy-sol/a-missing-gem": "^1.0.4",
+		"@lazy-sol/access-control-upgradeable": "^1.0.5",
 		"@nomiclabs/hardhat-truffle5": "^2.0.7",
 		"@nomiclabs/hardhat-web3": "^2.0.0",
 		"@openzeppelin/contracts": "4.9.3",
 		"@openzeppelin/contracts-upgradeable": "4.9.3",
-		"hardhat": "^2.16.0",
-		"hardhat-dependency-compiler": "^1.1.3",
+		"hardhat": "^2.22.4",
+		"hardhat-dependency-compiler": "^1.1.4",
 		"hardhat-deploy": "^0.11.45"
 	},
 	"devDependencies": {
@@ -52,7 +52,7 @@
 		"ethereumjs-util": "^7.1.5",
 		"ethereumjs-wallet": "^1.0.2",
 		"loglevel": "^1.9.1",
-		"solidity-coverage": "^0.8.8"
+		"solidity-coverage": "^0.8.12"
 	},
 	"overrides": {
 		"minimatch": "^3.0.5",

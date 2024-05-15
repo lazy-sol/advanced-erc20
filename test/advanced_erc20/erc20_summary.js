@@ -21,7 +21,7 @@ const {
 const {
 	random_bn,
 	TWO256,
-} = require("@lazy-sol/a-missing-gem/bn_utils");
+} = require("@lazy-sol/a-missing-gem");
 
 // RBAC token features and roles
 const {

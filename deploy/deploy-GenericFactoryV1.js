@@ -9,7 +9,7 @@
 const {
 	print_amt,
 	print_contract_details,
-} = require("@lazy-sol/a-missing-gem/deployment_utils");
+} = require("@lazy-sol/a-missing-gem");
 
 // to be picked up and executed by hardhat-deploy plugin
 module.exports = async function({deployments, getChainId, getNamedAccounts, getUnnamedAccounts}) {

@@ -595,10 +595,10 @@ function decode_post_construct_data(data) {
 	// Decode the data
 	const decoded_data = web3.eth.abi.decodeParameters(abi.inputs, data.slice(10));
 	return {
-		owner: decoded_data._contractOwner,
+		owner: decoded_data.contractOwner,
 		name: decoded_data._name,
 		symbol: decoded_data._symbol,
-		supply: decoded_data._initialSupply,
+		supply: decoded_data.initialSupply,
 	};
 }
 

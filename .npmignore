@@ -90,5 +90,4 @@ bin
 contracts/mocks
 deploy
 deployments
-scripts
 test/include/deployment_fixture_routines.js

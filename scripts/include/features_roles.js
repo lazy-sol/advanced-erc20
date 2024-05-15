@@ -1,35 +1,19 @@
 // copy and export all the features and roles constants from different contracts
 
-// Auxiliary BN stuff
-const BN = web3.utils.BN;
-const TWO = new BN(2);
-
-// Access manager is responsible for assigning the roles to users,
-// enabling/disabling global features of the smart contract
-const ROLE_ACCESS_MANAGER = TWO.pow(new BN(255));
-
-// Upgrade manager is responsible for smart contract upgrades
-const ROLE_UPGRADE_MANAGER = TWO.pow(new BN(254));
-
-// Bitmask representing all the possible permissions (super admin role)
-const FULL_PRIVILEGES_MASK = TWO.pow(new BN(256)).subn(1);
+// export what is available already in the RBAC module
+const {
+	ROLE_ACCESS_MANAGER,
+	ROLE_UPGRADE_MANAGER,
+	FULL_PRIVILEGES_MASK,
+	or,
+	not,
+} = require("@lazy-sol/access-control-upgradeable");
 
 // All 16 features enabled
 const FEATURE_ALL = 0x0000_FFFF;
 
 // All 16 features disabled
 const FEATURE_NONE = 0x0000_0000;
-
-// negates the role (permission set) provided
-function not(...roles) {
-	let roles_sum = new BN(0);
-	for(let role of roles) {
-		// Note: BN.js has undocumented ugly behaviour to return a reference
-		// to the BN passed into the constructor instead of creating a new instance
-		roles_sum = roles_sum.or(new BN(role));
-	}
-	return FULL_PRIVILEGES_MASK.xor(roles_sum);
-}
 
 // Start: ===== ERC20/ERC721 =====
 
@@ -140,9 +124,10 @@ module.exports = {
 	ROLE_ACCESS_MANAGER,
 	ROLE_UPGRADE_MANAGER,
 	FULL_PRIVILEGES_MASK,
+	or,
+	not,
 	FEATURE_ALL,
 	FEATURE_NONE,
-	not,
 	FEATURE_TRANSFERS,
 	FEATURE_TRANSFERS_ON_BEHALF,
 	FEATURE_UNSAFE_TRANSFERS,

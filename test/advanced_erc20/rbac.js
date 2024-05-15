@@ -18,7 +18,7 @@ const {
 } = constants;
 
 // BN constants and utilities
-const {random_bn255} = require("@lazy-sol/a-missing-gem/bn_utils");
+const {random_bn255} = require("@lazy-sol/a-missing-gem");
 
 // RBAC token features and roles
 const {
