@@ -81,6 +81,9 @@ cache/
 !/artifacts/contracts/protocol/GenericFactoryV1.sol/
 !/artifacts/contracts/protocol/GenericFactoryV1.sol/GenericFactoryV1.json
 
+# typechain
+typechain
+
 # etc
 *.log
 keys.js
