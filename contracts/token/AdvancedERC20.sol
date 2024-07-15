@@ -1617,10 +1617,13 @@ contract AdvancedERC20 is ERC1363, MintableBurnableERC20, EIP2612, EIP3009, Init
 	/**
 	 * @dev Auxiliary function to verify structured EIP712 message signature and derive its signer
 	 *
+	 * @dev Recovers the non-zero signer address from the signed message throwing on failure
+	 *
 	 * @param abiEncodedTypehash abi.encode of the message typehash together with all its parameters
 	 * @param v the recovery byte of the signature
 	 * @param r half of the ECDSA signature pair
 	 * @param s half of the ECDSA signature pair
+	 * @return recovered non-zero signer address, unless throwing
 	 */
 	function __deriveSigner(bytes memory abiEncodedTypehash, uint8 v, bytes32 r, bytes32 s) private view returns(address) {
 		// build the EIP-712 hashStruct of the message
@@ -1632,7 +1635,7 @@ contract AdvancedERC20 is ERC1363, MintableBurnableERC20, EIP2612, EIP3009, Init
 		// recover the address which signed the message with v, r, s
 		address signer = ECDSA.recover(digest, v, r, s);
 
-		// according to EIP3009 spec, zero address must be rejected when using ecrecover
+		// according to the specs, zero address must be rejected when using ecrecover
 		// this check already happened inside `ECDSA.recover`
 
 		// return the signer address derived from the signature

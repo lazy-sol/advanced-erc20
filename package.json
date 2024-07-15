@@ -11,6 +11,7 @@
 		"compile": "hardhat compile",
 		"test": "hardhat test",
 		"coverage": "hardhat coverage",
+		"deploy": "hardhat deploy",
 		"verify-testnet": "npm run verify-sepolia && npm run verify-binance_testnet && npm run verify-opBnb_testnet && npm run verify-base_sepolia",
 		"verify": "npm run verify-mainnet && npm run verify-binance && npm run verify-opBnb && npm run verify-base_mainnet",
 		"verify-sepolia": "hardhat etherscan-verify --network sepolia --api-key $ETHERSCAN_KEY",
