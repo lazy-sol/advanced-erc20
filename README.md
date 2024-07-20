@@ -1,17 +1,20 @@
 # Advanced ERC20 #
-Feature rich lightweight ERC20 implementation which is not built on top of OpenZeppelin ERC20 implementation.
+A feature-rich and lightweight ERC20 token implementation, designed independently from the OpenZeppelin ERC20 framework,
+offering enhanced flexibility and performance.
 
-Basic Features Summary:
+## Basic Features Summary
 - Symbol: configurable (set on deployment)
 - Name: configurable (set on deployment)
 - Decimals: 18
 - Initial/maximum total supply: configurable (set on deployment)
 - Initial supply holder (initial holder) address: configurable (set on deployment)
-- Mintability: configurable (initially enabled, but possible to revoke forever)
-- Burnability: configurable (initially enabled, but possible to revoke forever)
+- Mintable: configurable (set on deployment); revocable
+- Burnable: configurable (set on deployment); revocable
+- Upgradable: no
 - DAO Support: supports voting delegation
+- Deployment: standalone or EIP-1167 cloning
 
-Advanced Features Summary:
+## Advanced Features Summary
 - Supports atomic allowance modification, resolves well-known ERC20 issue with approve (arXiv:1907.00903)
 - Voting delegation and delegation on behalf via EIP-712 (like in Compound CMP token) - gives the token
   powerful governance capabilities by allowing holders to form voting groups by electing delegates
@@ -24,6 +27,8 @@ Advanced Features Summary:
   without having an ETH to pay gas fees
 - EIP-3009: Transfer With Authorization - improves user experience by allowing to use a token
   without having an ETH to pay gas fees
+
+See the full specs here: [Advanced ERC20 Token Specification.pdf](./docs%2FAdvanced%20ERC20%20Token%20Specification.pdf)
 
 This repo contains the [token implementation](contracts/token/AdvancedERC20.sol) and
 [helper generic factory](contracts/protocol/GenericFactoryV1.sol) allowing the super cheap deployments of the

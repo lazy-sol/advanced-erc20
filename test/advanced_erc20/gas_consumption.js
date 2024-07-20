@@ -45,6 +45,10 @@ const {
 	advanced_erc20_deploy,
 	erc1363_deploy_acceptor,
 } = require("./include/deployment_routines");
+const {
+	deploy_generic_factory,
+	generic_factory_clone,
+} = require("../protocol/include/deployment_routines");
 
 // run gas consumption tests (non-functional requirements' compliance)
 contract("AdvancedERC20: Gas Consumption (Non-functional Requirements) tests", function(accounts) {
@@ -100,7 +104,7 @@ contract("AdvancedERC20: Gas Consumption (Non-functional Requirements) tests", f
 				it(`consumes no more than ${gas} gas  [ @skip-on-coverage ]`, async function() {
 					const gasUsed = extract_gas(receipt);
 					expect(gasUsed).to.be.lte(gas);
-					if(gas - gasUsed > gas / 20) {
+					if(gas - gasUsed > 41) {
 						console.log("only %o gas was used while expected up to %o", gasUsed, gas);
 					}
 				});
@@ -205,13 +209,20 @@ contract("AdvancedERC20: Gas Consumption (Non-functional Requirements) tests", f
 					consumes_no_more_than(g3);
 				});
 			}
-			function gas_usage_deployment(g1) {
+			function gas_usage_deployment(g1, g2) {
 				describe("deployment", function() {
 					beforeEach(async function() {
 						const txHash = token.transactionHash;
 						receipt = {receipt: await web3.eth.getTransactionReceipt(txHash)};
 					});
 					consumes_no_more_than(g1);
+				});
+				describe("deployment via EIP-1167 cloning", function() {
+					beforeEach(async function() {
+						const factory = await deploy_generic_factory();
+						({receipt} = await generic_factory_clone(factory, token, a0));
+					});
+					consumes_no_more_than(g2);
 				});
 			}
 			function gas_usage_approvals(g1, g2, g3, g4, g5) {
@@ -277,26 +288,32 @@ contract("AdvancedERC20: Gas Consumption (Non-functional Requirements) tests", f
 			}
 
 			function gas_usage_suite() {
-				gas_usage_deployment(3759425);
+				gas_usage_deployment(3734266, 297018);
 				// approve, increase, decrease, 1363 approve, 2612 permit 
-				gas_usage_approvals(48520, 48876, 31808, 57400, 79402);
+				gas_usage_approvals(48508, 48864, 31774, 57400, 79390);
 				describe("when delegation is not involved", function() {
 					// 20: transfer, on behalf, inf.allowance; 1363: transfer, on behalf, inf.allowance; 3009: transfer, receive
-					gas_usage_transfers(61653, 71626, 64462, 68764, 78730, 71569, 87661, 87700);
+					gas_usage_transfers(61619, 71614, 64450, 68764, 78730, 71569, 87649, 87688);
 					// mint, burn, burn on behalf, burn inf.allowance
-					gas_usage_mint_burn(91443, 76668, 86160, 79040);
+					gas_usage_mint_burn(91431, 76634, 86126, 79006);
 				});
 				describe("when first address is a delegate", function() {
 					beforeEach(async function() {
 						await token.delegate(from, {from});
 					});
-					gas_usage_transfers(94834, 104790, 97629, 101920, 111865, 104704, 120808, 120847);
+					// 20: transfer, on behalf, inf.allowance; 1363: transfer, on behalf, inf.allowance; 3009: transfer, receive
+					gas_usage_transfers(94757, 104749, 97588, 101899, 111865, 104704, 120796, 120835);
+					// mint, burn, burn on behalf, burn inf.allowance
+					gas_usage_mint_burn(91431, 109772, 119264, 112144);
 				});
 				describe("when second address is a delegate", function() {
 					beforeEach(async function() {
 						await token.delegate(to, {from: to});
 					});
-					gas_usage_transfers(108943, 118898, 111737, 68785, 78730, 71569, 134904, 134943);
+					// 20: transfer, on behalf, inf.allowance; 1363: transfer, on behalf, inf.allowance; 3009: transfer, receive
+					gas_usage_transfers(108865, 118857, 111696, 68764, 78730, 71569, 134892, 134931);
+					// mint, burn, burn on behalf, burn inf.allowance
+					gas_usage_mint_burn(138689, 76634, 86126, 79006);
 				});
 				describe("when delegation is fully involved", function() {
 					beforeEach(async function() {
@@ -304,25 +321,25 @@ contract("AdvancedERC20: Gas Consumption (Non-functional Requirements) tests", f
 						await token.delegate(to, {from: to});
 					});
 					// 20: transfer, on behalf, inf.allowance; 1363: transfer, on behalf, inf.allowance; 3009: transfer, receive
-					gas_usage_transfers(141961, 151931, 144770, 101899, 111865, 104704, 167979, 168018);
+					gas_usage_transfers(141927, 151919, 144758, 101899, 111865, 104704, 167967, 168006);
 					// mint, burn, burn on behalf, burn inf.allowance
-					gas_usage_mint_burn(138689, 109806, 119298, 112178);
+					gas_usage_mint_burn(138689, 109772, 119264, 112144);
 				});
 				describe("when there is nothing on the balances", function() {
-					gas_usage_delegation(50717, 80871);
+					gas_usage_delegation(50629, 80871);
 				});
 				describe("when one of the balances is non-zero", function() {
 					beforeEach(async function() {
 						await token.transfer(by, value.muln(2), {from});
 					});
-					gas_usage_delegation(97961, 128100);
+					gas_usage_delegation(97873, 128100);
 				});
 				describe("when both balances are non-zero", function() {
 					beforeEach(async function() {
 						await token.transfer(by, value.muln(2), {from});
 						await token.delegate(by, {from: by});
 					});
-					gas_usage_delegation(113923, 144074);
+					gas_usage_delegation(113835, 144074);
 				});
 			}
 

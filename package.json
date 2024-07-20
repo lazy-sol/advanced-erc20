@@ -1,6 +1,6 @@
 {
 	"name": "@lazy-sol/advanced-erc20",
-	"version": "1.0.7",
+	"version": "1.0.8",
 	"description": "Feature rich lightweight ERC20 implementation which is not based on the OpenZeppelin ERC20 implementation",
 	"main": "index.js",
 	"engines": {
@@ -35,14 +35,14 @@
 	},
 	"homepage": "https://github.com/lazy-sol/advanced-erc20#readme",
 	"dependencies": {
-		"@lazy-sol/a-missing-gem": "^1.0.5",
+		"@lazy-sol/a-missing-gem": "^1.0.9",
 		"@lazy-sol/access-control-upgradeable": "^1.0.5",
 		"@nomiclabs/hardhat-truffle5": "^2.0.7",
 		"@nomiclabs/hardhat-web3": "^2.0.0",
 		"@openzeppelin/contracts": "4.9.3",
 		"@openzeppelin/contracts-upgradeable": "4.9.3",
-		"hardhat": "^2.22.4",
-		"hardhat-dependency-compiler": "^1.1.4",
+		"hardhat": "^2.22.6",
+		"hardhat-dependency-compiler": "^1.2.1",
 		"hardhat-deploy": "^0.11.45"
 	},
 	"devDependencies": {
