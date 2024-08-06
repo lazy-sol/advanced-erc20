@@ -32,6 +32,7 @@ const {
 // deployment routines in use
 const {
 	advanced_erc20_deploy_restricted,
+	erc1363_deploy_mock,
 } = require("./include/deployment_routines");
 
 // run in-depth mint/burn tests
@@ -53,54 +54,133 @@ contract("AdvancedRC20: Mint/Burn", function(accounts) {
 			});
 
 			const by = a1;
-			const to = H0;
 			const from = H0;
 			const value = S0;
 			describe("Minting", function() {
-				function behaves_like_mint(by, to, value) {
+				let to, mint;
+				function behaves_like_mint() {
 					it("when the recipient is zero address – mint reverts", async function() {
-						await expectRevert(token.mint(ZERO_ADDRESS, value, {from: by}), "zero address");
+						await expectRevert(mint(ZERO_ADDRESS, value, {from: by}), "zero address");
 					});
 					it("when amount is too big and causes total supply overflow – mint reverts", async function() {
-						await expectRevert(token.mint(to, MAX_UINT256, {from: by}), "zero value or arithmetic overflow");
+						await expectRevert(mint(to, MAX_UINT256, {from: by}), "zero value or arithmetic overflow");
 					});
 					it("when amount is zero – mint reverts", async function() {
-						await expectRevert(token.mint(to, 0, {from: by}), "zero value or arithmetic overflow");
+						await expectRevert(mint(to, 0, {from: by}), "zero value or arithmetic overflow");
 					});
 					it("when amount is too big to fit into uint192 – mint reverts", async function() {
-						await expectRevert(token.mint(to, new BN(2).pow(new BN(192)), {from: by}), "total supply overflow (uint192)");
+						await expectRevert(mint(to, new BN(2).pow(new BN(192)), {from: by}), "total supply overflow (uint192)");
 					});
 					describe("otherwise (when recipient and amount are valid)", function() {
 						let receipt;
 						beforeEach(async function() {
-							receipt = await token.mint(to, value, {from: by});
+							receipt = await mint(to, value, {from: by});
 						});
 						it("total supply increases", async function() {
 							expect(await token.totalSupply()).to.be.a.bignumber.that.equals(S0.add(value));
 						});
 						it("recipient balance increases", async function() {
-							expect(await token.balanceOf(to)).to.be.a.bignumber.that.equals(S0.add(value));
+							expect(await token.balanceOf(to)).to.be.a.bignumber.that.equals(value);
 						});
-						it("emits Minted event", async function() {
-							expectEvent(receipt,"Minted", {by, to, value});
+						it('emits "Minted" event', async function() {
+							expectEvent(receipt, "Minted", {by, to, value});
 						});
-						it("emits improved Transfer event (arXiv:1907.00903)", async function() {
-							expectEvent(receipt,"Transfer", {by, from: ZERO_ADDRESS, to, value});
+						it('emits improved "Transfer" event (arXiv:1907.00903)', async function() {
+							expectEvent(receipt, "Transfer", {by, from: ZERO_ADDRESS, to, value});
 						});
-						it("emits ERC20 Transfer event", async function() {
-							expectEvent(receipt,"Transfer", {from: ZERO_ADDRESS, to, value});
+						it('emits ERC20 "Transfer" event', async function() {
+							expectEvent(receipt, "Transfer", {from: ZERO_ADDRESS, to, value});
 						});
 					});
 				}
 
-				describe("when performed by TOKEN_CREATOR", function() {
+				describe("unsafe minting: mint()", function() {
 					beforeEach(async function() {
-						await token.updateRole(by, ROLE_TOKEN_CREATOR, {from: a0});
+						to = a2;
+						mint = token.mint;
 					});
-					behaves_like_mint(by, to, value);
+
+					describe("when performed by TOKEN_CREATOR", function() {
+						beforeEach(async function() {
+							await token.updateRole(by, ROLE_TOKEN_CREATOR, {from: a0});
+						});
+						behaves_like_mint();
+					});
+					it("when performed not by TOKEN_CREATOR – mint reverts", async function() {
+						await expectRevert(mint(to, value, {from: by}), "access denied");
+					});
 				});
-				it("when performed not by TOKEN_CREATOR – mint reverts", async function() {
-					await expectRevert(token.mint(to, value, {from: by}), "access denied");
+				describe("ERC1363 minting: mintAndCall()", function() {
+					let acceptor;
+					beforeEach(async function() {
+						acceptor = await erc1363_deploy_mock(a0);
+						({address: to} = acceptor);
+					});
+
+					function behaves_like_1363mint(data = null) {
+						const to_eoa = a2;
+						it("when the recipient is EOA – mint reverts", async function() {
+							await expectRevert(mint(to_eoa, value, {from: by}), "EOA recipient");
+						});
+						it("when the recipient doesn't implement ERC1363Receiver", async function() {
+							await expectRevert(mint(token.address, value, {from: by}), "selector was not recognized");
+						});
+						it("when the recipient fails the transaction (throws)", async function() {
+							await acceptor.setErrMsg("super_err_code_618", {from: a0});
+							await expectRevert(mint(to, value, {from: by}), "super_err_code_618");
+						});
+						it("when the recipient rejects the transaction", async function() {
+							await acceptor.setRetVal("0x123", {from: a0});
+							await expectRevert(mint(to, value, {from: by}), "invalid onTransferReceived response");
+						});
+						describe("otherwise (when recipient and amount are valid)", function() {
+							let receipt;
+							beforeEach(async function() {
+								receipt = await mint(to, value, {from: by});
+							});
+							it('emits "OnTransferReceived" event on the ERC1363Receiver', async function() {
+								await expectEvent.inTransaction(receipt.tx, acceptor, "OnTransferReceived", {
+									operator: by,
+									from: ZERO_ADDRESS,
+									value,
+									data,
+								});
+							});
+						});
+					}
+
+					describe("without payload", function() {
+						beforeEach(async function() {
+							mint = token.methods["mintAndCall(address,uint256)"];
+						});
+						describe("when performed by TOKEN_CREATOR", function() {
+							beforeEach(async function() {
+								await token.updateRole(by, ROLE_TOKEN_CREATOR, {from: a0});
+							});
+							behaves_like_mint();
+							behaves_like_1363mint();
+						});
+						it("when performed not by TOKEN_CREATOR – mint reverts", async function() {
+							await expectRevert(mint(to, value, {from: by}), "access denied");
+						});
+					});
+					describe("with the payload", function() {
+						const data = web3.utils.utf8ToHex("Hello, World!");
+						beforeEach(async function() {
+							const fn = token.methods["mintAndCall(address,uint256,bytes)"];
+							mint = async(to, value, opts) => await fn(to, value, data, opts);
+						});
+						describe("when performed by TOKEN_CREATOR", function() {
+							beforeEach(async function() {
+								await token.updateRole(by, ROLE_TOKEN_CREATOR, {from: a0});
+							});
+							behaves_like_mint();
+							behaves_like_1363mint(data);
+						});
+						it("when performed not by TOKEN_CREATOR – mint reverts", async function() {
+							await expectRevert(mint(to, value, {from: by}), "access denied");
+						});
+					});
 				});
 			});
 			describe("Burning", function() {
@@ -126,13 +206,13 @@ contract("AdvancedRC20: Mint/Burn", function(accounts) {
 						it("supplier balance decreases", async function() {
 							expect(await token.balanceOf(from)).to.be.a.bignumber.that.equals(b1.sub(value));
 						});
-						it("emits Burnt event", async function() {
+						it('emits "Burnt" event', async function() {
 							expectEvent(receipt,"Burnt", {by, from, value});
 						});
-						it("emits improved Transfer event (arXiv:1907.00903)", async function() {
+						it('emits improved "Transfer" event (arXiv:1907.00903)', async function() {
 							expectEvent(receipt,"Transfer", {by, from, to: ZERO_ADDRESS, value});
 						});
-						it("emits ERC20 Transfer event", async function() {
+						it('emits ERC20 "Transfer" event', async function() {
 							expectEvent(receipt,"Transfer", {from, to: ZERO_ADDRESS, value});
 						});
 					}

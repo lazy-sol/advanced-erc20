@@ -2,9 +2,10 @@
 pragma solidity ^0.8.4;
 
 import "../interfaces/ERC1363Spec.sol";
+import "./Forwarder.sol";
 
 /// @dev Mock for ERC1363Receiver/ERC1363Spender interfaces
-contract ERC1363Mock is ERC1363Receiver, ERC1363Spender {
+contract LightweightERC1363Mock is ERC1363Receiver, ERC1363Spender, Forwarder {
 	// an event to be fired in `onTransferReceived`
 	event OnTransferReceived(address indexed operator, address indexed from, uint256 value, bytes data);
 	// an event to be fired in `onApprovalReceived`
@@ -29,7 +30,52 @@ contract ERC1363Mock is ERC1363Receiver, ERC1363Spender {
 	}
 }
 
-// mock class using IERC1363Receiver
+/// @dev Mock for ERC1363Receiver/ERC1363Spender interfaces
+contract ConfigurableERC1363Mock is ERC1363Receiver, ERC1363Spender, Forwarder {
+	bytes4 private retVal;
+	string private errMsg;
+
+	// an event to be fired in `onTransferReceived`
+	event OnTransferReceived(address indexed operator, address indexed from, uint256 value, bytes data);
+	// an event to be fired in `onApprovalReceived`
+	event OnApprovalReceived(address indexed owner, uint256 value, bytes data);
+
+	function setRetVal(bytes4 _retVal) public {
+		retVal = _retVal;
+	}
+
+	function setErrMsg(string calldata _errMsg) public {
+		errMsg = _errMsg;
+	}
+
+	/// @inheritdoc ERC1363Receiver
+	function onTransferReceived(address operator, address from, uint256 value, bytes memory data) public override returns (bytes4) {
+		if(bytes(errMsg).length > 0) {
+			revert(errMsg);
+		}
+
+		// emit an event
+		emit OnTransferReceived(operator, from, value, data);
+
+		// return "success" or custom code
+		return retVal == bytes4(0)? ERC1363Receiver(this).onTransferReceived.selector: retVal;
+	}
+
+	/// @inheritdoc ERC1363Spender
+	function onApprovalReceived(address owner, uint256 value, bytes memory data) external override returns (bytes4) {
+		if(bytes(errMsg).length > 0) {
+			revert(errMsg);
+		}
+
+		// emit an event
+		emit OnApprovalReceived(owner, value, data);
+
+		// return "success" or custom code
+		return retVal == bytes4(0)? ERC1363Spender(this).onApprovalReceived.selector: retVal;
+	}
+}
+
+// mock contract required for vittominacori's ERC1363.behaviour
 contract ERC1363ReceiverMock is ERC1363Receiver {
 	bytes4 private immutable _retval;
 	bool private immutable _reverts;
@@ -54,7 +100,7 @@ contract ERC1363ReceiverMock is ERC1363Receiver {
 	}
 }
 
-// mock class using IERC1363Spender
+// mock contract required for vittominacori's ERC1363.behaviour
 contract ERC1363SpenderMock is ERC1363Spender {
 	bytes4 private immutable _retval;
 	bool private immutable _reverts;

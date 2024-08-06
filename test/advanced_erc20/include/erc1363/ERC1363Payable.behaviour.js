@@ -6,7 +6,7 @@ const { shouldSupportInterfaces } = require('./SupportsInterface.behavior');
 const { ZERO_ADDRESS } = constants;
 
 const ERC20 = artifacts.require('@openzeppelin/contracts/token/ERC20/IERC20.sol:IERC20');
-const ERC1363Payable = artifacts.require('ERC1363Mock');
+const ERC1363Payable = artifacts.require('ERC1363ReceiverMock');
 
 function shouldBehaveLikeERC1363Payable ([owner, spender], balance) {
   const value = balance;

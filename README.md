@@ -20,15 +20,16 @@ offering enhanced flexibility and performance.
   powerful governance capabilities by allowing holders to form voting groups by electing delegates
 - Unlimited approval feature (like in 0x ZRX token) - saves gas for transfers on behalf
   by eliminating the need to update “unlimited” allowance value
-- ERC-1363 Payable Token - ERC721-like callback execution mechanism for transfers,
-  transfers on behalf and approvals; allows creation of smart contracts capable of executing callbacks
-  in response to transfer or approval in a single transaction
+- ERC-1363 Payable Token - ERC721-like callback execution mechanism for transfers, transfers on behalf,
+  approvals, and restricted access mints (which are sometimes viewed as transfers from zero address);
+  allows creation of smart contracts capable of executing callbacks - in response to token transfer, approval,
+  and token minting - in a single transaction
 - EIP-2612: permit - 712-signed approvals - improves user experience by allowing to use a token
   without having an ETH to pay gas fees
 - EIP-3009: Transfer With Authorization - improves user experience by allowing to use a token
   without having an ETH to pay gas fees
 
-See the full specs here: [Advanced ERC20 Token Specification.pdf](./docs%2FAdvanced%20ERC20%20Token%20Specification.pdf)
+See the full specs here: [Advanced ERC20 Token Specification.pdf](./docs/Advanced_ERC20_Token_Specification.pdf)
 
 This repo contains the [token implementation](contracts/token/AdvancedERC20.sol) and
 [helper generic factory](contracts/protocol/GenericFactoryV1.sol) allowing the super cheap deployments of the

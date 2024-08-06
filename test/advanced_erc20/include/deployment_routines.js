@@ -88,14 +88,28 @@ async function advanced_erc20_deploy_comp_mock(a0, H0 = a0, s0 = S0, name = NAME
 }
 
 /**
- * Deploys ERC1363 acceptor, which can accept ERC1363 transfers/approvals
+ * Deploys ERC1363 acceptor, which accepts ERC1363 transfers/approvals
  *
  * @param a0 smart contract owner, super admin
  * @returns ERC1363Receiver/ERC1363Spender instance
  */
 async function erc1363_deploy_acceptor(a0) {
 	// smart contracts required
-	const ERC1363Mock = artifacts.require("./ERC1363Mock");
+	const ERC1363Mock = artifacts.require("./LightweightERC1363Mock");
+
+	// deploy ERC1363 mock and return
+	return await ERC1363Mock.new({from: a0});
+}
+
+/**
+ * Deploys ERC1363 acceptor, which can accept or reject ERC1363 transfers/approvals
+ *
+ * @param a0 smart contract owner, super admin
+ * @returns ERC1363Receiver/ERC1363Spender instance
+ */
+async function erc1363_deploy_mock(a0) {
+	// smart contracts required
+	const ERC1363Mock = artifacts.require("./ConfigurableERC1363Mock");
 
 	// deploy ERC1363 mock and return
 	return await ERC1363Mock.new({from: a0});
@@ -113,5 +127,6 @@ module.exports = {
 	// advanced_erc20_deploy_restricted_via_factory,
 	advanced_erc20_deploy_comp_mock,
 	erc1363_deploy_acceptor,
+	erc1363_deploy_mock,
 	// deploy_token_factory,
 };
