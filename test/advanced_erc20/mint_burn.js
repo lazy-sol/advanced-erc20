@@ -59,19 +59,19 @@ contract("AdvancedRC20: Mint/Burn", function(accounts) {
 			describe("Minting", function() {
 				let to, mint;
 				function behaves_like_mint() {
-					it("when the recipient is zero address – mint reverts", async function() {
+					it("fails if the recipient is zero address", async function() {
 						await expectRevert(mint(ZERO_ADDRESS, value, {from: by}), "zero address");
 					});
-					it("when amount is too big and causes total supply overflow – mint reverts", async function() {
+					it("fails if amount is too big and causes total supply overflow – mint reverts", async function() {
 						await expectRevert(mint(to, MAX_UINT256, {from: by}), "zero value or arithmetic overflow");
 					});
-					it("when amount is zero – mint reverts", async function() {
+					it("fails if amount is zero – mint reverts", async function() {
 						await expectRevert(mint(to, 0, {from: by}), "zero value or arithmetic overflow");
 					});
-					it("when amount is too big to fit into uint192 – mint reverts", async function() {
+					it("fails if amount is too big to fit into uint192 – mint reverts", async function() {
 						await expectRevert(mint(to, new BN(2).pow(new BN(192)), {from: by}), "total supply overflow (uint192)");
 					});
-					describe("otherwise (when recipient and amount are valid)", function() {
+					describe("succeeds otherwise (when recipient and amount are valid)", function() {
 						let receipt;
 						beforeEach(async function() {
 							receipt = await mint(to, value, {from: by});
@@ -110,6 +110,91 @@ contract("AdvancedRC20: Mint/Burn", function(accounts) {
 						await expectRevert(mint(to, value, {from: by}), "access denied");
 					});
 				});
+				describe("safe minting: safeMint()", function() {
+					let acceptor;
+					beforeEach(async function() {
+						acceptor = await erc1363_deploy_mock(a0);
+					});
+
+					function behaves_like_safe_mint(data = null) {
+						it("fails if the recipient doesn't implement ERC1363Receiver", async function() {
+							await expectRevert(mint(token.address, value, {from: by}), "selector was not recognized");
+						});
+						it("fails if the recipient fails the transaction (throws)", async function() {
+							await acceptor.setErrMsg("super_err_code_618", {from: a0});
+							await expectRevert(mint(to, value, {from: by}), "super_err_code_618");
+						});
+						it("fails if the recipient rejects the transaction", async function() {
+							await acceptor.setRetVal("0x123", {from: a0});
+							await expectRevert(mint(to, value, {from: by}), "invalid onTransferReceived response");
+						});
+						describe("succeeds otherwise (when recipient and amount are valid)", function() {
+							let receipt;
+							beforeEach(async function() {
+								receipt = await mint(to, value, {from: by});
+							});
+							it('emits "OnTransferReceived" event on the ERC1363Receiver', async function() {
+								await expectEvent.inTransaction(receipt.tx, acceptor, "OnTransferReceived", {
+									operator: by,
+									from: ZERO_ADDRESS,
+									value,
+									data,
+								});
+							});
+						});
+					}
+
+					describe("without payload", function() {
+						const data = web3.utils.utf8ToHex("");
+						beforeEach(async function() {
+							const fn = token.methods["safeMint(address,uint256,bytes)"];
+							mint = async(to, value, opts) => await fn(to, value, data, opts);
+						});
+						describe("when performed by TOKEN_CREATOR", function() {
+							beforeEach(async function() {
+								await token.updateRole(by, ROLE_TOKEN_CREATOR, {from: a0});
+							});
+							describe("when the recipient is EOA", function() {
+								behaves_like_mint();
+							});
+							describe("when the recipient is a smart contract", function() {
+								beforeEach(async function() {
+									({address: to} = acceptor);
+								});
+								behaves_like_mint();
+								behaves_like_safe_mint();
+							});
+						});
+						it("when performed not by TOKEN_CREATOR – mint reverts", async function() {
+							await expectRevert(mint(to, value, {from: by}), "access denied");
+						});
+					});
+					describe("with the payload", function() {
+						const data = web3.utils.utf8ToHex("Hello, World!");
+						beforeEach(async function() {
+							const fn = token.methods["safeMint(address,uint256,bytes)"];
+							mint = async(to, value, opts) => await fn(to, value, data, opts);
+						});
+						describe("when performed by TOKEN_CREATOR", function() {
+							beforeEach(async function() {
+								await token.updateRole(by, ROLE_TOKEN_CREATOR, {from: a0});
+							});
+							describe("when the recipient is EOA", function() {
+								behaves_like_mint();
+							});
+							describe("when the recipient is a smart contract", function() {
+								beforeEach(async function() {
+									({address: to} = acceptor);
+								});
+								behaves_like_mint();
+								behaves_like_safe_mint(data);
+							});
+						});
+						it("when performed not by TOKEN_CREATOR – mint reverts", async function() {
+							await expectRevert(mint(to, value, {from: by}), "access denied");
+						});
+					});
+				});
 				describe("ERC1363 minting: mintAndCall()", function() {
 					let acceptor;
 					beforeEach(async function() {
@@ -119,21 +204,21 @@ contract("AdvancedRC20: Mint/Burn", function(accounts) {
 
 					function behaves_like_1363mint(data = null) {
 						const to_eoa = a2;
-						it("when the recipient is EOA – mint reverts", async function() {
+						it("fails if the recipient is EOA – mint reverts", async function() {
 							await expectRevert(mint(to_eoa, value, {from: by}), "EOA recipient");
 						});
-						it("when the recipient doesn't implement ERC1363Receiver", async function() {
+						it("fails if the recipient doesn't implement ERC1363Receiver", async function() {
 							await expectRevert(mint(token.address, value, {from: by}), "selector was not recognized");
 						});
-						it("when the recipient fails the transaction (throws)", async function() {
+						it("fails if the recipient fails the transaction (throws)", async function() {
 							await acceptor.setErrMsg("super_err_code_618", {from: a0});
 							await expectRevert(mint(to, value, {from: by}), "super_err_code_618");
 						});
-						it("when the recipient rejects the transaction", async function() {
+						it("fails if the recipient rejects the transaction", async function() {
 							await acceptor.setRetVal("0x123", {from: a0});
 							await expectRevert(mint(to, value, {from: by}), "invalid onTransferReceived response");
 						});
-						describe("otherwise (when recipient and amount are valid)", function() {
+						describe("succeeds otherwise (when recipient and amount are valid)", function() {
 							let receipt;
 							beforeEach(async function() {
 								receipt = await mint(to, value, {from: by});

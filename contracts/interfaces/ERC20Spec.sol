@@ -34,7 +34,7 @@ interface ERC20 {
 	 * @param owner an address which granted a permission to transfer
 	 *      tokens on its behalf
 	 * @param spender an address which received a permission to transfer
-	 *      tokens on behalf of the owner `_owner`
+	 *      tokens on behalf of the owner `owner`
 	 * @param value amount of tokens granted to transfer on behalf
 	 */
 	event Approval(address indexed owner, address indexed spender, uint256 value);
@@ -80,10 +80,10 @@ interface ERC20 {
 	/**
 	 * @notice Gets the balance of a particular address
 	 *
-	 * @param _owner the address to query the the balance for
+	 * @param owner the address to query the the balance for
 	 * @return balance an amount of tokens owned by the address specified
 	 */
-	function balanceOf(address _owner) external view returns (uint256 balance);
+	function balanceOf(address owner) external view returns (uint256 balance);
 
 	/**
 	 * @notice Transfers some tokens to an external address or a smart contract
@@ -92,79 +92,79 @@ interface ERC20 {
 	 *      positive token balance tracked by this smart contract)
 	 * @dev Throws on any error like
 	 *      * insufficient token balance or
-	 *      * incorrect `_to` address:
+	 *      * incorrect `to` address:
 	 *          * zero address or
 	 *          * self address or
 	 *          * smart contract which doesn't support ERC20
 	 *
-	 * @param _to an address to transfer tokens to,
+	 * @param to an address to transfer tokens to,
 	 *      must be either an external address or a smart contract,
 	 *      compliant with the ERC20 standard
-	 * @param _value amount of tokens to be transferred,, zero
+	 * @param value amount of tokens to be transferred,, zero
 	 *      value is allowed
 	 * @return success true on success, throws otherwise
 	 */
-	function transfer(address _to, uint256 _value) external returns (bool success);
+	function transfer(address to, uint256 value) external returns (bool success);
 
 	/**
-	 * @notice Transfers some tokens on behalf of address `_from' (token owner)
-	 *      to some other address `_to`
+	 * @notice Transfers some tokens on behalf of address `from' (token owner)
+	 *      to some other address `to`
 	 *
 	 * @dev Called by token owner on his own or approved address,
 	 *      an address approved earlier by token owner to
 	 *      transfer some amount of tokens on its behalf
 	 * @dev Throws on any error like
 	 *      * insufficient token balance or
-	 *      * incorrect `_to` address:
+	 *      * incorrect `to` address:
 	 *          * zero address or
-	 *          * same as `_from` address (self transfer)
+	 *          * same as `from` address (self transfer)
 	 *          * smart contract which doesn't support ERC20
 	 *
-	 * @param _from token owner which approved caller (transaction sender)
-	 *      to transfer `_value` of tokens on its behalf
-	 * @param _to an address to transfer tokens to,
+	 * @param from token owner which approved caller (transaction sender)
+	 *      to transfer `value` of tokens on its behalf
+	 * @param to an address to transfer tokens to,
 	 *      must be either an external address or a smart contract,
 	 *      compliant with the ERC20 standard
-	 * @param _value amount of tokens to be transferred,, zero
+	 * @param value amount of tokens to be transferred,, zero
 	 *      value is allowed
 	 * @return success true on success, throws otherwise
 	 */
-	function transferFrom(address _from, address _to, uint256 _value) external returns (bool success);
+	function transferFrom(address from, address to, uint256 value) external returns (bool success);
 
 	/**
-	 * @notice Approves address called `_spender` to transfer some amount
+	 * @notice Approves address called `spender` to transfer some amount
 	 *      of tokens on behalf of the owner (transaction sender)
 	 *
 	 * @dev Transaction sender must not necessarily own any tokens to grant the permission
 	 *
-	 * @param _spender an address approved by the caller (token owner)
+	 * @param spender an address approved by the caller (token owner)
 	 *      to spend some tokens on its behalf
-	 * @param _value an amount of tokens spender `_spender` is allowed to
+	 * @param value an amount of tokens spender `spender` is allowed to
 	 *      transfer on behalf of the token owner
 	 * @return success true on success, throws otherwise
 	 */
-	function approve(address _spender, uint256 _value) external returns (bool success);
+	function approve(address spender, uint256 value) external returns (bool success);
 
 	/**
-	 * @notice Returns the amount which _spender is still allowed to withdraw from _owner.
+	 * @notice Returns the amount which `spender` is still allowed to withdraw from `owner`.
 	 *
 	 * @dev A function to check an amount of tokens owner approved
 	 *      to transfer on its behalf by some other address called "spender"
 	 *
-	 * @param _owner an address which approves transferring some tokens on its behalf
-	 * @param _spender an address approved to transfer some tokens on behalf
-	 * @return remaining an amount of tokens approved address `_spender` can transfer on behalf
-	 *      of token owner `_owner`
+	 * @param owner an address which approves transferring some tokens on its behalf
+	 * @param spender an address approved to transfer some tokens on behalf
+	 * @return remaining an amount of tokens approved address `spender` can transfer on behalf
+	 *      of token owner `owner`
 	 */
-	function allowance(address _owner, address _spender) external view returns (uint256 remaining);
+	function allowance(address owner, address spender) external view returns (uint256 remaining);
 }
 
 /**
  * @title Mintable/burnable ERC20 Extension
  *
- * @notice Adds mint/burn functions to ERC20 interface, these functions
- *      are usually present in ERC20 implementations, but these become
- *      a must for the bridged tokens in L2 since the bridge on L2
+ * @notice Adds mint/burn functions to the ERC20 interface;
+ *      these functions are usually present in ERC20 implementations;
+ *      they become a must for the bridged tokens since the bridge usually
  *      needs to have a way to mint tokens deposited from L1 to L2
  *      and to burn tokens to be withdrawn from L2 to L1
  */
@@ -174,11 +174,11 @@ interface MintableBurnableERC20 is ERC20 {
 	 * @dev The value specified is treated as is without taking
 	 *      into account what `decimals` value is
 	 *
-	 * @param _to an address to mint tokens to
-	 * @param _value an amount of tokens to mint (create)
+	 * @param to an address to mint tokens to
+	 * @param value an amount of tokens to mint (create)
 	 * @return success true on success, false otherwise
 	 */
-	function mint(address _to, uint256 _value) external returns (bool success);
+	function mint(address to, uint256 value) external returns (bool success);
 
 	/**
 	 * @dev Burns (destroys) some tokens from the address specified
@@ -186,9 +186,9 @@ interface MintableBurnableERC20 is ERC20 {
 	 * @dev The value specified is treated as is without taking
 	 *      into account what `decimals` value is
 	 *
-	 * @param _from an address to burn some tokens from
-	 * @param _value an amount of tokens to burn (destroy)
+	 * @param from an address to burn some tokens from
+	 * @param value an amount of tokens to burn (destroy)
 	 * @return success true on success, false otherwise
 	 */
-	function burn(address _from, uint256 _value) external returns (bool success);
+	function burn(address from, uint256 value) external returns (bool success);
 }
