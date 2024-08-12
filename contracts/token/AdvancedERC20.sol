@@ -33,9 +33,10 @@ import "@lazy-sol/access-control-upgradeable/contracts/InitializableAccessContro
  *        powerful governance capabilities by allowing holders to form voting groups by electing delegates
  *      - Unlimited approval feature (like in 0x ZRX token) - saves gas for transfers on behalf
  *        by eliminating the need to update “unlimited” allowance value
- *      - ERC-1363 Payable Token - ERC721-like callback execution mechanism for transfers,
- *        transfers on behalf and approvals; allows creation of smart contracts capable of executing callbacks
- *        in response to transfer or approval in a single transaction
+ *      - ERC-1363 Payable Token - ERC721-like callback execution mechanism for transfers, transfers on behalf,
+ *        approvals, and restricted access mints (which are sometimes viewed as transfers from zero address);
+ *        allows creation of smart contracts capable of executing callbacks - in response to token transfer, approval,
+  *       and token minting - in a single transaction
  *      - EIP-2612: permit - 712-signed approvals - improves user experience by allowing to use a token
  *        without having an ETH to pay gas fees
  *      - EIP-3009: Transfer With Authorization - improves user experience by allowing to use a token
@@ -119,7 +120,7 @@ import "@lazy-sol/access-control-upgradeable/contracts/InitializableAccessContro
  *
  * @author Basil Gorin
  */
-contract AdvancedERC20 is ERC1363, MintableBurnableERC20, EIP2612, EIP3009, InitializableAccessControl {
+contract AdvancedERC20 is MintableERC1363, MintableBurnableERC20, EIP2612, EIP3009, InitializableAccessControl {
 	/**
 	 * @notice Name of the token
 	 *
@@ -633,7 +634,7 @@ contract AdvancedERC20 is ERC1363, MintableBurnableERC20, EIP2612, EIP3009, Init
 	 * @dev Returns true on success, throws otherwise
 	 *
 	 * @param to an address to transfer tokens to,
-	 *      must be a smart contract, implementing ERC1363Receiver
+	 *      must be a smart contract, implementing the ERC1363Receiver interface
 	 * @param value amount of tokens to be transferred, zero
 	 *      value is allowed
 	 * @return true unless throwing
@@ -659,7 +660,7 @@ contract AdvancedERC20 is ERC1363, MintableBurnableERC20, EIP2612, EIP3009, Init
 	 * @dev Returns true on success, throws otherwise
 	 *
 	 * @param to an address to transfer tokens to,
-	 *      must be a smart contract, implementing ERC1363Receiver
+	 *      must be a smart contract, implementing the ERC1363Receiver interface
 	 * @param value amount of tokens to be transferred, zero
 	 *      value is allowed
 	 * @param data [optional] additional data with no specified format,
@@ -691,7 +692,7 @@ contract AdvancedERC20 is ERC1363, MintableBurnableERC20, EIP2612, EIP3009, Init
 	 * @param from token owner which approved caller (transaction sender)
 	 *      to transfer `value` of tokens on its behalf
 	 * @param to an address to transfer tokens to,
-	 *      must be a smart contract, implementing ERC1363Receiver
+	 *      must be a smart contract, implementing the ERC1363Receiver interface
 	 * @param value amount of tokens to be transferred, zero
 	 *      value is allowed
 	 * @return true unless throwing
@@ -721,7 +722,7 @@ contract AdvancedERC20 is ERC1363, MintableBurnableERC20, EIP2612, EIP3009, Init
 	 * @param from token owner which approved caller (transaction sender)
 	 *      to transfer `value` of tokens on its behalf
 	 * @param to an address to transfer tokens to,
-	 *      must be a smart contract, implementing ERC1363Receiver
+	 *      must be a smart contract, implementing the ERC1363Receiver interface
 	 * @param value amount of tokens to be transferred, zero
 	 *      value is allowed
 	 * @param data [optional] additional data with no specified format,
@@ -1256,7 +1257,7 @@ contract AdvancedERC20 is ERC1363, MintableBurnableERC20, EIP2612, EIP3009, Init
 	 *
 	 * @dev Throws on overflow, if totalSupply + value doesn't fit into uint192
 	 *
-	 * @param to an address to mint tokens to
+	 * @param to the destination address to mint tokens to
 	 * @param value an amount of tokens to mint (create)
 	 * @return success true on success, throws otherwise
 	 */
@@ -1268,6 +1269,81 @@ contract AdvancedERC20 is ERC1363, MintableBurnableERC20, EIP2612, EIP3009, Init
 		__mint(to, value);
 
 		// always return true
+		return true;
+	}
+
+	/**
+	 * @dev Mints (creates) some tokens and then executes `onTransferReceived` callback on the receiver,
+	 *      passing zero address as the token source address `from`
+	 * @dev The value specified is treated as is without taking into account what `decimals` value is
+	 *
+	 * @dev Requires executor to have `ROLE_TOKEN_CREATOR` permission
+	 * @dev Throws on overflow, if totalSupply + value doesn't fit into uint192
+	 * @dev Throws if the destination address `to` is a smart contract not supporting ERC1363Receiver interface
+	 *
+	 * @param to the destination address to mint tokens to, can be an EAO
+	 *      or a smart contract, implementing the ERC1363Receiver interface
+	 * @param value amount of tokens to mint (create)
+	 * @return success true on success, throws otherwise
+	 */
+	function safeMint(address to, uint256 value, bytes memory data) public virtual returns(bool success) {
+		// first delegate call to `mint` to perform regular minting
+		mint(to, value);
+
+		// after the successful minting - check if receiver supports
+		// ERC1363Receiver and execute a callback handler `onTransferReceived`,
+		// reverting whole transaction on any error
+		_notifyTransferred(address(0), to, value, data, true);
+
+		// function throws on any error, so if we're here - it means operation successful, just return true
+		return true;
+	}
+
+	/**
+	 * @dev Mints (creates) some tokens and then executes `onTransferReceived` callback on the receiver,
+	 *      passing zero address as the token source address `from`
+	 * @dev The value specified is treated as is without taking into account what `decimals` value is
+	 *
+	 * @dev Requires executor to have `ROLE_TOKEN_CREATOR` permission
+	 * @dev Throws on overflow, if totalSupply + value doesn't fit into uint192
+	 * @dev Throws if the destination address `to` is EOA or smart contract not supporting ERC1363Receiver interface
+	 *
+	 * @param to the destination address to mint tokens to,
+	 *      must be a smart contract, implementing the ERC1363Receiver interface
+	 * @param value amount of tokens to mint (create)
+	 * @return success true on success, throws otherwise
+	 */
+	function mintAndCall(address to, uint256 value) public override virtual returns (bool success) {
+		// delegate to `mintAndCall` passing empty data param
+		return mintAndCall(to, value, "");
+	}
+
+	/**
+	 * @dev Mints (creates) some tokens and then executes `onTransferReceived` callback on the receiver,
+	 *      passing zero address as the token source address `from`
+	 * @dev The value specified is treated as is without taking into account what `decimals` value is
+	 *
+	 * @dev Requires executor to have `ROLE_TOKEN_CREATOR` permission
+	 * @dev Throws on overflow, if totalSupply + value doesn't fit into uint192
+	 * @dev Throws if the destination address `to` is EOA or smart contract not supporting ERC1363Receiver interface
+	 *
+	 * @param to the destination address to mint tokens to,
+	 *      must be a smart contract, implementing the ERC1363Receiver interface
+	 * @param value amount of tokens to mint (create)
+	 * @param data [optional] additional data with no specified format,
+	 *      sent in onTransferReceived call to `to`
+	 * @return success true on success, throws otherwise
+	 */
+	function mintAndCall(address to, uint256 value, bytes memory data) public override virtual returns (bool success) {
+		// first delegate call to `mint` to perform regular minting
+		mint(to, value);
+
+		// after the successful minting - check if receiver supports
+		// ERC1363Receiver and execute a callback handler `onTransferReceived`,
+		// reverting whole transaction on any error
+		_notifyTransferred(address(0), to, value, data, false);
+
+		// function throws on any error, so if we're here - it means operation successful, just return true
 		return true;
 	}
 

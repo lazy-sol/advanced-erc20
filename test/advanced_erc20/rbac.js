@@ -525,37 +525,59 @@ contract("ERC20: AccessControl (RBAC) tests", function(accounts) {
 					});
 				});
 
-				describe("when operator is TOKEN_CREATOR", function() {
-					beforeEach(async function() {
-						await token.updateRole(by, ROLE_TOKEN_CREATOR, {from: a0});
+				// RBAC ROLE_TOKEN_CREATOR
+				describe("[RBAC:ROLE_TOKEN_CREATOR] token minting", function() {
+					async function mint() {
+						return await token.mint(to, value, {from: by});
+					}
+					async function mint_and_call() {
+						const acceptor = await erc1363_deploy_acceptor(a0);
+						return await token.methods["mintAndCall(address,uint256)"](acceptor.address, value, {from: by});
+					}
+					describe("when tx executor doesn't have ROLE_TOKEN_CREATOR permission", function() {
+						beforeEach(async function() {
+							await token.updateRole(by, not(ROLE_TOKEN_CREATOR), {from: a0});
+						});
+						it("mint reverts", async function() {
+							await expectRevert(mint(), "access denied");
+						});
+						it("ERC1363 mint reverts", async function() {
+							await expectRevert(mint_and_call(), "access denied");
+						});
 					});
-					it("mint succeeds", async function() {
-						await token.mint(to, value, {from: by});
+					describe("when tx executor has ROLE_TOKEN_CREATOR permission", function() {
+						beforeEach(async function() {
+							await token.updateRole(by, ROLE_TOKEN_CREATOR, {from: a0});
+						});
+						it("mint succeeds", async function() {
+							await mint();
+						});
+						it("ERC1363 mint succeeds", async function() {
+							await mint_and_call();
+						});
 					});
 				});
-				describe("when operator is not TOKEN_CREATOR", function() {
-					beforeEach(async function() {
-						await token.updateRole(by, not(ROLE_TOKEN_CREATOR), {from: a0});
+				// RBAC ROLE_TOKEN_DESTROYER
+				describe("[RBAC:ROLE_TOKEN_DESTROYER] token burning", function() {
+					async function burn() {
+						return await token.burn(from, value, {from: by});
+					}
+					describe("when tx executor doesn't have ROLE_TOKEN_DESTROYER permission and FEATURE_BURNS_ON_BEHALF is enabled", function() {
+						beforeEach(async function() {
+							await token.updateFeatures(FEATURE_BURNS_ON_BEHALF, {from: a0});
+							await token.updateRole(by, not(ROLE_TOKEN_DESTROYER), {from: a0});
+						});
+						it("burn reverts", async function() {
+							await expectRevert(burn(), "burn amount exceeds allowance");
+						});
 					});
-					it("mint reverts", async function() {
-						await expectRevert(token.mint(to, value, {from: by}), "access denied");
-					});
-				});
-				describe("when operator is TOKEN_DESTROYER", function() {
-					beforeEach(async function() {
-						await token.updateRole(by, ROLE_TOKEN_DESTROYER, {from: a0});
-					});
-					it("burn succeeds", async function() {
-						await token.burn(from, value, {from: by});
-					});
-				});
-				describe("when operator is not TOKEN_DESTROYER and FEATURE_BURNS_ON_BEHALF is enabled", function() {
-					beforeEach(async function() {
-						await token.updateFeatures(FEATURE_BURNS_ON_BEHALF, {from: a0});
-						await token.updateRole(by, not(ROLE_TOKEN_DESTROYER), {from: a0});
-					});
-					it("burn reverts", async function() {
-						await expectRevert(token.burn(from, value, {from: by}), "burn amount exceeds allowance");
+					describe("when tx executor has ROLE_TOKEN_DESTROYER permission", function() {
+						beforeEach(async function() {
+							await token.updateRole(by, ROLE_TOKEN_DESTROYER, {from: a0});
+						});
+						it("burn succeeds", async function() {
+							await burn();
+						});
 					});
 				});
 			});

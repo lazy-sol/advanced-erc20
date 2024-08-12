@@ -48,7 +48,6 @@ interface ERC1363 is ERC20, ERC165  {
 	 */
 	function transferFromAndCall(address from, address to, uint256 value) external returns (bool);
 
-
 	/**
 	 * @notice Transfer tokens from one address to another and then call `onTransferReceived` on receiver
 	 * @param from address The address which you want to send tokens from
@@ -136,4 +135,30 @@ interface ERC1363Spender {
 	 *      unless throwing
 	 */
 	function onApprovalReceived(address owner, uint256 value, bytes memory data) external returns (bytes4);
+}
+
+/**
+ * @title Mintable ERC1363 Extension
+ *
+ * @notice Adds mint functions to the ERC1363 interface, these functions
+ *      follow the same idea and logic as ERC1363 transferAndCall functions,
+ *      allowing to notify the recipient ERC1363Receiver contract about the tokens received
+ */
+interface MintableERC1363 is ERC1363 {
+	/**
+	 * @notice Mint tokens to the receiver and then call `onTransferReceived` on the receiver
+	 * @param to address The address which you want to mint to
+	 * @param value uint256 The amount of tokens to be minted
+	 * @return true unless throwing
+	 */
+	function mintAndCall(address to, uint256 value) external returns (bool);
+
+	/**
+	 * @notice Mint tokens to the receiver and then call `onTransferReceived` on the receiver
+	 * @param to address The address which you want to mint to
+	 * @param value uint256 The amount of tokens to be minted
+	 * @param data bytes Additional data with no specified format, sent in call to `to`
+	 * @return true unless throwing
+	 */
+	function mintAndCall(address to, uint256 value, bytes memory data) external returns (bool);
 }
