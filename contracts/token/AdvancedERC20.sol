@@ -6,7 +6,7 @@ import "../interfaces/EIP2612.sol";
 import "../interfaces/EIP3009.sol";
 import "../lib/ECDSA.sol";
 
-import "@lazy-sol/access-control-upgradeable/contracts/InitializableAccessControl.sol";
+import "@lazy-sol/access-control-upgradeable/contracts/InitializableAccessControlCore.sol";
 
 /**
  * @title Advanced ERC20
@@ -120,7 +120,7 @@ import "@lazy-sol/access-control-upgradeable/contracts/InitializableAccessContro
  *
  * @author Basil Gorin
  */
-contract AdvancedERC20 is MintableERC1363, MintableBurnableERC20, EIP2612, EIP3009, InitializableAccessControl {
+contract AdvancedERC20 is MintableERC1363, MintableBurnableERC20, EIP2612, EIP3009, InitializableAccessControlCore {
 	/**
 	 * @notice Name of the token
 	 *
@@ -731,7 +731,7 @@ contract AdvancedERC20 is MintableERC1363, MintableBurnableERC20, EIP2612, EIP30
 	 */
 	function transferFromAndCall(address from, address to, uint256 value, bytes memory data) public override returns (bool) {
 		// ensure ERC-1363 transfers are enabled
-		require(isFeatureEnabled(FEATURE_ERC1363_TRANSFERS), "ERC1363 transfers are disabled");
+		require(_isFeatureEnabled(FEATURE_ERC1363_TRANSFERS), "ERC1363 transfers are disabled");
 
 		// first delegate call to `unsafeTransferFrom` to perform the unsafe token(s) transfer
 		unsafeTransferFrom(from, to, value);
@@ -784,7 +784,7 @@ contract AdvancedERC20 is MintableERC1363, MintableBurnableERC20, EIP2612, EIP30
 	 */
 	function approveAndCall(address spender, uint256 value, bytes memory data) public override returns (bool) {
 		// ensure ERC-1363 approvals are enabled
-		require(isFeatureEnabled(FEATURE_ERC1363_APPROVALS), "ERC1363 approvals are disabled");
+		require(_isFeatureEnabled(FEATURE_ERC1363_APPROVALS), "ERC1363 approvals are disabled");
 
 		// execute regular ERC20 approve - delegate to `approve`
 		approve(spender, value);
@@ -926,9 +926,9 @@ contract AdvancedERC20 is MintableERC1363, MintableBurnableERC20, EIP2612, EIP30
 		// if `FEATURE_UNSAFE_TRANSFERS` is enabled
 		// or receiver has `ROLE_ERC20_RECEIVER` permission
 		// or sender has `ROLE_ERC20_SENDER` permission
-		if(isFeatureEnabled(FEATURE_UNSAFE_TRANSFERS)
-			|| isOperatorInRole(to, ROLE_ERC20_RECEIVER)
-			|| isSenderInRole(ROLE_ERC20_SENDER)) {
+		if(_isFeatureEnabled(FEATURE_UNSAFE_TRANSFERS)
+			|| _isOperatorInRole(to, ROLE_ERC20_RECEIVER)
+			|| _isSenderInRole(ROLE_ERC20_SENDER)) {
 			// we execute unsafe transfer - delegate call to `unsafeTransferFrom`,
 			// `FEATURE_TRANSFERS` is verified inside it
 			unsafeTransferFrom(from, to, value);
@@ -1033,8 +1033,8 @@ contract AdvancedERC20 is MintableERC1363, MintableBurnableERC20, EIP2612, EIP30
 	function __transferFrom(address by, address from, address to, uint256 value) private {
 		// if `from` is equal to sender, require transfers feature to be enabled
 		// otherwise require transfers on behalf feature to be enabled
-		require(from == by && isFeatureEnabled(FEATURE_TRANSFERS)
-		     || from != by && isFeatureEnabled(FEATURE_TRANSFERS_ON_BEHALF),
+		require(from == by && _isFeatureEnabled(FEATURE_TRANSFERS)
+		     || from != by && _isFeatureEnabled(FEATURE_TRANSFERS_ON_BEHALF),
 		        from == by ? "transfers are disabled": "transfers on behalf are disabled");
 
 		// non-zero source address check - Zeppelin
@@ -1263,7 +1263,7 @@ contract AdvancedERC20 is MintableERC1363, MintableBurnableERC20, EIP2612, EIP30
 	 */
 	function mint(address to, uint256 value) public override virtual returns(bool success) {
 		// check if caller has sufficient permissions to mint tokens
-		require(isSenderInRole(ROLE_TOKEN_CREATOR), "access denied");
+		require(_isSenderInRole(ROLE_TOKEN_CREATOR), "access denied");
 
 		// delegate call to unsafe `__mint`
 		__mint(to, value);
@@ -1417,11 +1417,11 @@ contract AdvancedERC20 is MintableERC1363, MintableBurnableERC20, EIP2612, EIP30
 	function burn(address from, uint256 value) public override virtual returns(bool success) {
 		// check if caller has sufficient permissions to burn tokens
 		// and if not - check for possibility to burn own tokens or to burn on behalf
-		if(!isSenderInRole(ROLE_TOKEN_DESTROYER)) {
+		if(!_isSenderInRole(ROLE_TOKEN_DESTROYER)) {
 			// if `from` is equal to sender, require own burns feature to be enabled
 			// otherwise require burns on behalf feature to be enabled
-			require(from == msg.sender && isFeatureEnabled(FEATURE_OWN_BURNS)
-			     || from != msg.sender && isFeatureEnabled(FEATURE_BURNS_ON_BEHALF),
+			require(from == msg.sender && _isFeatureEnabled(FEATURE_OWN_BURNS)
+			     || from != msg.sender && _isFeatureEnabled(FEATURE_BURNS_ON_BEHALF),
 			        from == msg.sender? "burns are disabled": "burns on behalf are disabled");
 
 			// in case of burn on behalf
@@ -1533,7 +1533,7 @@ contract AdvancedERC20 is MintableERC1363, MintableBurnableERC20, EIP2612, EIP30
 	 */
 	function permit(address owner, address spender, uint256 value, uint256 exp, uint8 v, bytes32 r, bytes32 s) public override {
 		// verify permits are enabled
-		require(isFeatureEnabled(FEATURE_EIP2612_PERMITS), "EIP2612 permits are disabled");
+		require(_isFeatureEnabled(FEATURE_EIP2612_PERMITS), "EIP2612 permits are disabled");
 
 		// derive signer of the EIP712 Permit message, and
 		// update the nonce for that particular signer to avoid replay attack!!! --------->>> ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
@@ -1597,7 +1597,7 @@ contract AdvancedERC20 is MintableERC1363, MintableBurnableERC20, EIP2612, EIP30
 		bytes32 s
 	) public override {
 		// ensure EIP-3009 transfers are enabled
-		require(isFeatureEnabled(FEATURE_EIP3009_TRANSFERS), "EIP3009 transfers are disabled");
+		require(_isFeatureEnabled(FEATURE_EIP3009_TRANSFERS), "EIP3009 transfers are disabled");
 
 		// derive signer of the EIP712 TransferWithAuthorization message
 		address signer = __deriveSigner(abi.encode(TRANSFER_WITH_AUTHORIZATION_TYPEHASH, from, to, value, validAfter, validBefore, nonce), v, r, s);
@@ -1644,7 +1644,7 @@ contract AdvancedERC20 is MintableERC1363, MintableBurnableERC20, EIP2612, EIP30
 		bytes32 s
 	) public override {
 		// verify EIP3009 receptions are enabled
-		require(isFeatureEnabled(FEATURE_EIP3009_RECEPTIONS), "EIP3009 receptions are disabled");
+		require(_isFeatureEnabled(FEATURE_EIP3009_RECEPTIONS), "EIP3009 receptions are disabled");
 
 		// derive signer of the EIP712 ReceiveWithAuthorization message
 		address signer = __deriveSigner(abi.encode(RECEIVE_WITH_AUTHORIZATION_TYPEHASH, from, to, value, validAfter, validBefore, nonce), v, r, s);
@@ -1868,7 +1868,7 @@ contract AdvancedERC20 is MintableERC1363, MintableBurnableERC20, EIP2612, EIP30
 	 */
 	function delegate(address to) public {
 		// verify delegations are enabled
-		require(isFeatureEnabled(FEATURE_DELEGATIONS), "delegations are disabled");
+		require(_isFeatureEnabled(FEATURE_DELEGATIONS), "delegations are disabled");
 		// delegate call to `__delegate`
 		__delegate(msg.sender, to);
 	}
@@ -1918,7 +1918,7 @@ contract AdvancedERC20 is MintableERC1363, MintableBurnableERC20, EIP2612, EIP30
 	 */
 	function delegateWithAuthorization(address to, bytes32 nonce, uint256 exp, uint8 v, bytes32 r, bytes32 s) public {
 		// verify delegations on behalf are enabled
-		require(isFeatureEnabled(FEATURE_DELEGATIONS_ON_BEHALF), "delegations on behalf are disabled");
+		require(_isFeatureEnabled(FEATURE_DELEGATIONS_ON_BEHALF), "delegations on behalf are disabled");
 
 		// derive signer of the EIP712 Delegation message
 		address signer = __deriveSigner(abi.encode(DELEGATION_TYPEHASH, to, nonce, exp), v, r, s);
