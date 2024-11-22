@@ -579,7 +579,7 @@ contract AdvancedERC20 is MintableERC1363, MintableBurnableERC20, EIP2612, EIP30
 		address initialHolder,
 		uint256 initialSupply,
 		uint256 initialFeatures
-	) public initializer {
+	) public virtual initializer {
 		// verify name and symbol are set
 		require(bytes(_name).length > 0, "token name is not set");
 		require(bytes(_symbol).length > 0, "token symbol is not set");
@@ -607,7 +607,7 @@ contract AdvancedERC20 is MintableERC1363, MintableBurnableERC20, EIP2612, EIP30
 	/**
 	 * @inheritdoc ERC165
 	 */
-	function supportsInterface(bytes4 interfaceId) public pure virtual override returns (bool) {
+	function supportsInterface(bytes4 interfaceId) public pure override virtual returns (bool) {
 		// reconstruct from current interface(s) and super interface(s) (if any)
 		return interfaceId == type(ERC165).interfaceId
 		    || interfaceId == type(ERC20).interfaceId

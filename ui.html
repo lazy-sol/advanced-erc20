@@ -29,7 +29,7 @@
 <div id="main_app" style="display: none;">
 	<fieldset id="deployed_contracts_container" style="display: none;">
 		<legend>Deployed ERC20 Contracts</legend>
-		<table  id="deployed_contracts"><tr><td>Loading...</td></tr></table>
+		<table id="deployed_contracts"><tr><td>Loading...</td></tr></table>
 	</fieldset>
 	<fieldset><legend>Deploy New ERC20 Contract</legend>
 		<form onsubmit="deploy_contract(event)">
@@ -76,7 +76,7 @@
 				<td><label for="contract_features">Initially Enabled Features:</label></td>
 				<td>
 					<input id="contract_features" type="text" value="0xFFFFFFFF" size="10" style="font-family: monospace;"/>
-					<input type="button" title="Features Builder" value="⚙️" onclick="edit_features('contract_features')"  style="padding: 0 2px; cursor: pointer;"/>
+					<input type="button" title="Features Builder" value="⚙️" onclick="edit_features('contract_features')" style="padding: 0 2px; cursor: pointer;"/>
 				</td>
 			</tr>
 			<tr><td></td><td><input type="submit" value="Deploy"/></td></tr>
@@ -151,7 +151,7 @@
 				<td><label for="update_features_requested">Features Requested:</label></td>
 				<td>
 					<input id="update_features_requested" type="text" required size="10" style="font-family: monospace;"/>
-					<input type="button" title="Features Builder" value="⚙️" onclick="edit_features('update_features_requested')"  style="padding: 0 2px; cursor: pointer;"/>
+					<input type="button" title="Features Builder" value="⚙️" onclick="edit_features('update_features_requested')" style="padding: 0 2px; cursor: pointer;"/>
 				</td>
 			</tr>
 			<tr><td></td><td><input type="submit" value="Update"></td></tr>
@@ -165,6 +165,7 @@
 <div style="position: fixed; right: 0; bottom: 0; margin: 0.1em 0.2em; font-family: monospace;">
 	[Advanced ERC20]
 	[<a href="https://lazy-sol.github.io/tiny-erc721/ui.html">Tiny ERC721</a>]
+	[<a href="https://lazy-sol.github.io/access-control/ui.html">RBAC Inspector</a>]
 </div>
 </body>
 <script type="text/javascript">
@@ -542,8 +543,8 @@ function deployed_contracts_list_add(contract) {
 }
 
 // renders an HTML of the ERC20 list table row
-function render_contract_row(token) {
-	return `<tr><td>${token.name}</td><td>${token.symbol}</td><td>${token.supply}</td><td onclick="select_token('${token.address}');">${token.address}</td></tr>`;
+function render_contract_row({name, symbol, supply, address}) {
+	return `<tr><td>${name}</td><td>${symbol}</td><td>${supply}</td><td onclick="select_token('${address}');">${address}</td></tr>`;
 }
 
 // populates mint, burn, etc. inputs in the UI
@@ -670,7 +671,7 @@ function deploy_contract(e) {
 	}
 
 	if(!CONF.deployments_loaded()) {
-		non_fatal_error("Application is still loading. Please wait.");
+		alert("Application is still loading. Please wait.");
 		return false;
 	}
 
@@ -752,7 +753,7 @@ function mint_tokens(e) {
 	}
 
 	if(!CONF.deployments_loaded()) {
-		non_fatal_error("Application is still loading. Please wait.");
+		alert("Application is still loading. Please wait.");
 		return false;
 	}
 
@@ -820,7 +821,7 @@ function burn_tokens(e) {
 	}
 
 	if(!CONF.deployments_loaded()) {
-		non_fatal_error("Application is still loading. Please wait.");
+		alert("Application is still loading. Please wait.");
 		return false;
 	}
 
@@ -887,7 +888,7 @@ function update_features(e) {
 	}
 
 	if(!CONF.deployments_loaded()) {
-		non_fatal_error("Application is still loading. Please wait.");
+		alert("Application is still loading. Please wait.");
 		return false;
 	}
 
