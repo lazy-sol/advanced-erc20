@@ -103,9 +103,9 @@ contract("AdvancedERC20: Gas Consumption (Non-functional Requirements) tests", f
 
 			let receipt;
 			function consumes_no_more_than(gas) {
-				// tests marked with @skip-on-coverage will are removed from solidity-coverage,
+				// tests marked with @skip-on-coverage will be removed from solidity-coverage,
 				// see yield-solcover.js, see https://github.com/sc-forks/solidity-coverage/blob/master/docs/advanced.md
-				it(`consumes no more than ${gas} gas  [ @skip-on-coverage ]`, async function() {
+				it(`consumes no more than ${gas} gas [ @skip-on-coverage ]`, async function() {
 					const gasUsed = extract_gas(receipt);
 					expect(gasUsed).to.be.lte(gas);
 					if(gas - gasUsed > 41) {
@@ -304,7 +304,7 @@ contract("AdvancedERC20: Gas Consumption (Non-functional Requirements) tests", f
 			}
 
 			function gas_usage_suite() {
-				gas_usage_deployment(3761870, 297018);
+				gas_usage_deployment(3765389, 297055);
 				// approve, increase, decrease, 1363 approve, 2612 permit 
 				gas_usage_approvals(48508, 48864, 31818, 57446, 79412);
 				describe("when delegation is not involved", function() {
