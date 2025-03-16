@@ -17,6 +17,9 @@ const {
 	MAX_UINT256,
 } = constants;
 
+// number utils
+const {random_int} = require("@lazy-sol/a-missing-gem");
+
 // token constants
 const {
 	NAME,
@@ -43,7 +46,7 @@ contract("ERC20: Deployment tests", function(accounts) {
 			// define token
 			let token;
 
-			function deploys(a0) {
+			function deploys(a0, features = 0) {
 				it("deployment account doesn't get ownership (has zero permissions)", async function()  {
 					expect(await token.getRole(a0)).to.be.bignumber.that.equals("0");
 				});
@@ -52,6 +55,9 @@ contract("ERC20: Deployment tests", function(accounts) {
 				});
 				it("contract gets initialized properly", async function() {
 					expect(await token.getInitializedVersion()).to.be.bignumber.that.equals("1");
+				});
+				it("features get set correctly", async function() {
+					expect(await token.features()).to.be.bignumber.that.equals("" + features);
 				});
 			}
 
@@ -64,7 +70,7 @@ contract("ERC20: Deployment tests", function(accounts) {
 						expect(await token.getRole(H0)).to.be.a.bignumber.that.equals('0');
 					});
 
-					deploys(a0, H0, S0, NAME, SYMBOL);
+					deploys(a0);
 				});
 				describe("when S0 is zero", function() {
 					const S0 = 0;
@@ -73,7 +79,14 @@ contract("ERC20: Deployment tests", function(accounts) {
 						token = await deployment_fn(a0, H0, S0, NAME, SYMBOL);
 					});
 
-					deploys(a0, H0, S0, NAME, SYMBOL);
+					deploys(a0);
+				});
+				describe("when some features are initially requested", function() {
+					const features = random_int(1, 0xFFFF);
+					beforeEach(async function() {
+						token = await deployment_fn(a0, H0, S0, NAME, SYMBOL, features);
+					});
+					deploys(a0, features);
 				});
 			});
 		});

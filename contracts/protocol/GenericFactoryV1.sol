@@ -37,7 +37,7 @@ contract GenericFactoryV1 is UpgradeableAccessControl {
 	/**
 	 * @dev "Constructor replacement" for a smart contract with a delayed initialization (post-deployment initialization)
 	 */
-	function postConstruct() public initializer {
+	function postConstruct() external initializer {
 		// initialize the RBAC module
 		_postConstruct(msg.sender, 0);
 	}
@@ -53,7 +53,7 @@ contract GenericFactoryV1 is UpgradeableAccessControl {
 	 * @param _implAddress contract implementation address to clone
 	 * @param _data optional bytes data to execute the low-level call on cloned instance for initialization
 	 */
-	function clone(address _implAddress, bytes calldata _data) public returns(address proxyAddress, bytes memory returnData) {
+	function clone(address _implAddress, bytes calldata _data) external returns(address proxyAddress, bytes memory returnData) {
 		// "clone" the impl (deploy a proxy)
 		proxyAddress = __clone(_implAddress);
 

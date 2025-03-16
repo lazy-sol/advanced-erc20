@@ -41,13 +41,16 @@ contract("Generic Factory", function(accounts) {
 	// a1, a2,... – working accounts to perform tests on
 	const [A0, a0, H0, a1, a2] = accounts;
 
-	describe("when factory is already deployed", function() {
+	describe("when factory is already deployed and initialized", function() {
 		let factory, erc20_impl;
 		beforeEach(async function() {
 			factory = await deploy_generic_factory(a0);
 			erc20_impl = await deploy_advanced_erc20_implementation_contract(a0);
 		});
 
+		it("it can't be reinitialized", async function() {
+			await expectRevert(factory.postConstruct({from: a0}), "already initialized");
+		});
 		describe("it deploys ERC20 (proxy) successfully", function() {
 			const relayer = a1;
 			const owner = a2;
@@ -85,6 +88,31 @@ contract("Generic Factory", function(accounts) {
 			it("postConstruct cannot be executed on the deployed ERC20 (proxy)", async function() {
 				await expectRevert(token.postConstruct(a0, NAME, SYMBOL, H0, 0, 0), "already initialized");
 			});
+		});
+		describe("it deploys ERC20 (proxy) successfully (no initialization)", function() {
+			const relayer = a1;
+
+			let receipt, proxyAddress, token;
+			beforeEach(async function() {
+				receipt = await factory.clone(erc20_impl.address, "0x", {from: relayer});
+				proxyAddress = receipt.logs.find(log => log.event === "ProxyDeployed").args.proxyAddress;
+				token = await erc20_impl.constructor.at(proxyAddress);
+			});
+			it("ProxyDeployed event is emitted", async function() {
+				expectEvent(receipt, "ProxyDeployed", {
+					by: relayer,
+					proxyAddress,
+					implAddress: erc20_impl.address,
+					data: null,
+					returnData: null,
+				});
+			});
+			it("postConstruct can be executed on the deployed ERC20 (proxy)", async function() {
+				await token.postConstruct(a0, NAME, SYMBOL, H0, 0, 0);
+			});
+		});
+		it("it fails to deploy ERC20 (proxy) with wrong initialization data", async function() {
+			await expectRevert(factory.clone(erc20_impl.address, ZERO_BYTES32, {from: a0}), "proxy initialization failed");
 		});
 	});
 });

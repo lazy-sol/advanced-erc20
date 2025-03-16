@@ -54,6 +54,7 @@
 	},
 	"overrides": {
 		"axios": ">=1.7.5",
+		"elliptic": ">6.6.0",
 		"eth-gas-reporter": "^0.0.5",
 		"flat": "^5.0.1",
 		"lodash": "^4.17.20",

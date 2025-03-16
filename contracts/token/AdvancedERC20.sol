@@ -161,15 +161,16 @@ contract AdvancedERC20 is MintableERC1363, MintableBurnableERC20, EIP2612, EIP30
 	uint8 public constant decimals = 18;
 
 	/**
-	 * @notice Total supply of the token: initially 10,000,000,000,
-	 *      with the potential to decline over time as some tokens may get burnt but not minted
+	 * @notice Total supply of the token;
+	 *      initially set in the constructor or `postConstruct` initializer;
+	 *      can change over time as long as minting/burning features are enabled
 	 *
 	 * @dev ERC20 `function totalSupply() public view returns (uint256)`
 	 *
 	 * @dev Field is declared public: getter totalSupply() is created when compiled,
 	 *      it returns the amount of tokens in existence.
 	 */
-	uint256 public override totalSupply; // is set to 10 billion * 10^18 in the constructor
+	uint256 public override totalSupply;
 
 	/**
 	 * @dev A record of all the token balances
