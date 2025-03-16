@@ -337,7 +337,7 @@ module.exports = {
 		// https://hardhat.org/guides/compile-contracts.html
 		compilers: [
 			{ // project main compiler version
-				version: "0.8.4",
+				version: "0.8.29",
 				settings: {
 					optimizer: {
 						enabled: true,
