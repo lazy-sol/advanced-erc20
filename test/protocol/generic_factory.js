@@ -30,6 +30,7 @@ const {
 	deploy_generic_factory,
 	deploy_advanced_erc20_implementation_contract,
 	generic_factory_clone,
+	generic_factory_predict_clone_address,
 } = require("./include/deployment_routines");
 
 // run GenericFactory tests
@@ -113,6 +114,25 @@ contract("Generic Factory", function(accounts) {
 		});
 		it("it fails to deploy ERC20 (proxy) with wrong initialization data", async function() {
 			await expectRevert(factory.clone(erc20_impl.address, ZERO_BYTES32, {from: a0}), "proxy initialization failed");
+		});
+		it("it fails to deploy ERC20 (proxy) if pre-deployed contract exists at clone address", async function() {
+			const relayer = a1;
+			const owner = a2;
+
+			// Predict the address where the GenericFactory will attempt to clone the ERC20 proxy
+			const predicted_address = await generic_factory_predict_clone_address(factory, erc20_impl, owner, H0, relayer);
+
+			// Pre-deploy minimal "garbage" bytecode to the predicted clone address
+			// This simulates a contract already existing at that address
+			await network.provider.send("hardhat_setCode", [predicted_address, "0xdead"]);
+
+			// Attempt to clone a new ERC20 proxy using the GenericFactory
+			// This should fail because there's already code (even invalid) at the predicted address,
+			// triggering the require statement in the __clone function.
+			await expectRevert(
+				generic_factory_clone(factory, erc20_impl, owner, H0, relayer),
+				"ERC1167: create failed"
+			);
 		});
 	});
 });
