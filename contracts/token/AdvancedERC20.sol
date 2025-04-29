@@ -161,15 +161,16 @@ contract AdvancedERC20 is MintableERC1363, MintableBurnableERC20, EIP2612, EIP30
 	uint8 public constant decimals = 18;
 
 	/**
-	 * @notice Total supply of the token: initially 10,000,000,000,
-	 *      with the potential to decline over time as some tokens may get burnt but not minted
+	 * @notice Total supply of the token;
+	 *      initially set in the constructor or `postConstruct` initializer;
+	 *      can change over time as long as minting/burning features are enabled
 	 *
 	 * @dev ERC20 `function totalSupply() public view returns (uint256)`
 	 *
 	 * @dev Field is declared public: getter totalSupply() is created when compiled,
 	 *      it returns the amount of tokens in existence.
 	 */
-	uint256 public override totalSupply; // is set to 10 billion * 10^18 in the constructor
+	uint256 public override totalSupply;
 
 	/**
 	 * @dev A record of all the token balances
@@ -1382,7 +1383,7 @@ contract AdvancedERC20 is MintableERC1363, MintableBurnableERC20, EIP2612, EIP30
 		tokenBalances[to] += value;
 
 		// update total token supply history
-		__updateHistory(totalSupplyHistory, add, value);
+		__updateHistory(totalSupplyHistory, true, value);
 
 		// create voting power associated with the tokens minted
 		__moveVotingPower(msg.sender, address(0), votingDelegates[to], value);
@@ -1472,7 +1473,7 @@ contract AdvancedERC20 is MintableERC1363, MintableBurnableERC20, EIP2612, EIP30
 		totalSupply -= value;
 
 		// update total token supply history
-		__updateHistory(totalSupplyHistory, sub, value);
+		__updateHistory(totalSupplyHistory, false, value);
 
 		// destroy voting power associated with the tokens burnt
 		__moveVotingPower(msg.sender, votingDelegates[from], address(0), value);
@@ -1958,7 +1959,7 @@ contract AdvancedERC20 is MintableERC1363, MintableBurnableERC20, EIP2612, EIP30
 			KV[] storage h = votingPowerHistory[from];
 
 			// update source voting power: decrease by `value`
-			(uint256 fromVal, uint256 toVal) = __updateHistory(h, sub, value);
+			(uint256 fromVal, uint256 toVal) = __updateHistory(h, false, value);
 
 			// emit an event
 			emit VotingPowerChanged(by, from, fromVal, toVal);
@@ -1970,7 +1971,7 @@ contract AdvancedERC20 is MintableERC1363, MintableBurnableERC20, EIP2612, EIP30
 			KV[] storage h = votingPowerHistory[to];
 
 			// update destination voting power: increase by `value`
-			(uint256 fromVal, uint256 toVal) = __updateHistory(h, add, value);
+			(uint256 fromVal, uint256 toVal) = __updateHistory(h, true, value);
 
 			// emit an event
 			emit VotingPowerChanged(by, to, fromVal, toVal);
@@ -1983,18 +1984,18 @@ contract AdvancedERC20 is MintableERC1363, MintableBurnableERC20, EIP2612, EIP30
 	 *      value as derived
 	 *
 	 * @param h array of key-value pairs to append to
-	 * @param op a function (add/subtract) to apply
+	 * @param add an operation (add = true / subtract = false) to apply
 	 * @param delta the value for a key-value pair to add/subtract
 	 */
 	function __updateHistory(
 		KV[] storage h,
-		function(uint256,uint256) pure returns(uint256) op,
+		bool add,
 		uint256 delta
 	) private returns(uint256 fromVal, uint256 toVal) {
 		// init the old value - value of the last pair of the array
 		fromVal = h.length == 0? 0: h[h.length - 1].v;
 		// init the new value - result of the operation on the old value
-		toVal = op(fromVal, delta);
+		toVal = add? fromVal + delta: fromVal - delta;
 
 		// if there is an existing voting power value stored for current block
 		if(h.length != 0 && h[h.length - 1].k == block.number) {
@@ -2084,34 +2085,6 @@ contract AdvancedERC20 is MintableERC1363, MintableBurnableERC20, EIP2612, EIP30
 		// since we're interested in the element which is not larger than the
 		// element of interest, we return the lower bound `i`
 		return h[i].v;
-	}
-
-	/**
-	 * @dev Adds a + b
-	 *      Function is used as a parameter for other functions
-	 *
-	 * @param a addition term 1
-	 * @param b addition term 2
-	 * @return a + b
-	 */
-	function add(uint256 a, uint256 b) private pure returns(uint256) {
-		// add `a` to `b` and return
-		return a + b;
-	}
-
-	/**
-	 * @dev Subtracts a - b
-	 *      Function is used as a parameter for other functions
-	 *
-	 * @dev Requires a ≥ b
-	 *
-	 * @param a subtraction term 1
-	 * @param b subtraction term 2, b ≤ a
-	 * @return a - b
-	 */
-	function sub(uint256 a, uint256 b) private pure returns(uint256) {
-		// subtract `b` from `a` and return
-		return a - b;
 	}
 
 	// ===== End: DAO Support (Compound-like voting delegation) =====

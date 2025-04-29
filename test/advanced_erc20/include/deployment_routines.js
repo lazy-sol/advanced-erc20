@@ -59,14 +59,15 @@ async function advanced_erc20_deploy_restricted(a0, H0 = a0, s0 = S0, name = NAM
  * @param s0 initial token supply, optional
  * @param name ERC20 token name, optional
  * @param symbol ERC20 token symbol, optional
+ * @param features initially enabled features, optional (defaults to zero - no features)
  * @returns AdvancedERC20 instance
  */
-async function advanced_erc20_deploy_detached(a0, H0 = a0, s0 = S0, name = NAME, symbol = SYMBOL) {
+async function advanced_erc20_deploy_detached(a0, H0 = a0, s0 = S0, name = NAME, symbol = SYMBOL, features = 0) {
 	// smart contracts required
 	const AdvancedERC20 = artifacts.require("./AdvancedERC20");
 
 	// deploy and return the reference to the instance
-	return await AdvancedERC20.new(ZERO_ADDRESS, name, symbol, H0, s0, 0, {from: a0});
+	return await AdvancedERC20.new(ZERO_ADDRESS, name, symbol, H0, s0, features, {from: a0});
 }
 
 /**

@@ -65,6 +65,22 @@ async function generic_factory_clone(factory, impl, a0, H0 = a0, relayer = a0) {
 	return {receipt, instance, init_data};
 }
 
+/**
+ * Predicts the address of the AdvancedERC20 implementation contract cloned via the GenericFactory
+ *
+ * @param factory GenericFactory instance to use
+ * @param impl AdvancedERC20 implementation contract to clone
+ * @param a0 clone contract owner to set
+ * @param H0 initial token supply owner
+ * @param relayer cloning transaction executor
+ * @returns AdvancedERC20 clone (EIP-1167 Minimal Proxy) address
+ */
+async function generic_factory_predict_clone_address(factory, impl, a0, H0 = a0, relayer = a0) {
+	const init_data = impl.contract.methods.postConstruct(a0, NAME, SYMBOL, H0, S0, FEATURE_ALL).encodeABI();
+	const {proxyAddress} = await factory.contract.methods.clone(impl.address, init_data).call({from: relayer});
+	return proxyAddress;
+}
+
 // export public deployment API
 module.exports = {
 	NAME,
@@ -72,4 +88,5 @@ module.exports = {
 	deploy_generic_factory,
 	deploy_advanced_erc20_implementation_contract,
 	generic_factory_clone,
+	generic_factory_predict_clone_address,
 };
