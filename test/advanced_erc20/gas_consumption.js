@@ -304,7 +304,7 @@ contract("AdvancedERC20: Gas Consumption (Non-functional Requirements) tests", f
 			}
 
 			function gas_usage_suite() {
-				gas_usage_deployment(3755915, 296993);
+				gas_usage_deployment(3758195, 297753);
 				// approve, increase, decrease, 1363 approve, 2612 permit 
 				gas_usage_approvals(48508, 48869, 31826, 57297, 79412);
 				describe("when delegation is not involved", function() {

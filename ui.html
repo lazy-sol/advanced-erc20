@@ -200,11 +200,17 @@ const VOCABULARY = {
 
 <script type="text/javascript">
 // static HTML page anchors
+
+// Root App Elements
 const root_container = document.getElementById("root_container");
 const connection_state = document.getElementById("connection_state");
 const main_app = document.getElementById("main_app");
+
+// Deployed ERC20 Contracts List
 const deployed_contracts_container = document.getElementById("deployed_contracts_container");
 const deployed_contracts = document.getElementById("deployed_contracts");
+
+// Deploy New ERC20 Contract
 const token_name = document.getElementById("token_name");
 const token_symbol = document.getElementById("token_symbol");
 const token_supply = document.getElementById("token_supply");
@@ -214,16 +220,22 @@ const contract_owner = document.getElementById("contract_owner");
 const contract_owner_role = document.getElementById("contract_owner_role");
 const contract_features = document.getElementById("contract_features");
 const deploy_tx = document.getElementById("deploy_tx");
+
+// Mint
 const mint_address = document.getElementById("mint_address");
 const mint_to = document.getElementById("mint_to");
 const mint_amount = document.getElementById("mint_amount");
 const mint_amount_multiplier = document.getElementById("mint_amount_multiplier");
 const mint_tx = document.getElementById("mint_tx");
+
+// Burn
 const burn_token_addr = document.getElementById("burn_token_addr");
 const burn_from = document.getElementById("burn_from");
 const burn_amount = document.getElementById("burn_amount");
 const burn_amount_multiplier = document.getElementById("burn_amount_multiplier");
 const burn_tx = document.getElementById("burn_tx");
+
+// Features and Extensions
 const update_features_token_addr = document.getElementById("update_features_token_addr");
 const update_features_requested = document.getElementById("update_features_requested");
 const update_features_tx = document.getElementById("update_features_tx");
@@ -349,7 +361,7 @@ CONF.load_deployments();
 // due to the async nature of the app, many incoming events, it makes sense to follow
 // the state of the app by listening to all the events and updating the state
 const STATE = {
-	// currently connected network (recognized decimal Chain ID)
+	// the currently connected network (recognized decimal Chain ID)
 	chain_id: undefined,
 	// currently connected account (accounts[0])
 	A0: undefined,
@@ -361,14 +373,14 @@ const STATE = {
 	update_chain_id: function(chain_id) {
 		this.chain_id = chain_id? parseInt(chain_id): undefined;
 	},
-	// function to update currently connected account
+	// function to update the currently connected account
 	update_A0: function(accounts) {
 		// MetaMask is locked or not connected
 		if(!accounts || !accounts.length) {
 			this.A0 = undefined;
 		}
 		else {
-			[this.A0] = accounts;
+			[this.A0] = accounts.map(web3.utils.toChecksumAddress);
 		}
 	},
 	// function to refresh the connection state UI
@@ -429,7 +441,7 @@ function metamask_connect() {
 
 // check if MetaMask is connected
 ethereum.request({ method: 'eth_accounts' }).then(function(accounts) {
-	// check current connected network
+	// check the current connected network
 	ethereum.request({ method: 'eth_chainId' }).then(function(chain_id) {
 		STATE.update_chain_id(chain_id);
 		STATE.update_A0(accounts);
@@ -475,7 +487,7 @@ ethereum.on('disconnect', function(error) {
 
 // network switch listener
 ethereum.on('chainChanged', function(chain_id) {
-	console.log('network has been changed', chain_id)
+	console.log('the network has been changed', chain_id)
 	STATE.update_chain_id(chain_id);
 	STATE.refresh_ui();
 	reload_main_app();
@@ -523,21 +535,27 @@ async function add_sepolia_network() {
 	}
 }
 
+const deployed_contracts_list_table_header = "<tr><th>Name</th><th>Symbol</th><th>Initial Supply</th><th>Address</th></tr>";
+const empty_deployed_contracts_list_placeholder = "No contracts deployed yet.";
+
 // writes the entire deployed_contracts table
 function deployed_contracts_list_update(list) {
 	if(list && list.length) {
 		const table_body = list.map(render_contract_row).join("\n");
-		deployed_contracts.innerHTML = `<tr><th>Name</th><th>Symbol</th><th>Initial Supply</th><th>Address</th></tr>\n${table_body}`;
+		deployed_contracts.innerHTML = `${deployed_contracts_list_table_header}\n${table_body}`;
 		deployed_contracts_container.style["display"] = "block";
 	}
 	else {
-		deployed_contracts.innerHTML = "No contracts deployed yet.";
+		deployed_contracts.innerHTML = empty_deployed_contracts_list_placeholder;
 		deployed_contracts_container.style["display"] = "none";
 	}
 }
 
 // adds one row to deployed_contracts table
 function deployed_contracts_list_add(contract) {
+	if(deployed_contracts.innerHTML === empty_deployed_contracts_list_placeholder) {
+		deployed_contracts.innerHTML = `${deployed_contracts_list_table_header}\n`;
+	}
 	deployed_contracts.innerHTML += render_contract_row(contract);
 	deployed_contracts_container.style["display"] = "block";
 }
@@ -578,8 +596,8 @@ function reload_main_app() {
 
 	deployed_contracts.innerHTML = "Loading contracts...";
 	factory_list_deployments().then(deployed_contracts_list_update).catch(function(e) {
-		console.warn("failed to load deployed ERC20 list", e);
-		deployed_contracts.innerHTML = "Failed to load deployed ERC20 list: " + e;
+		console.warn("failed to load the deployed ERC20 list", e);
+		deployed_contracts.innerHTML = "Failed to load the deployed ERC20 list: " + e;
 		deployed_contracts_container.style["display"] = "block";
 	});
 
@@ -671,7 +689,7 @@ function deploy_contract(e) {
 	}
 
 	if(!CONF.deployments_loaded()) {
-		alert("Application is still loading. Please wait.");
+		alert("The application is still loading. Please wait.");
 		return false;
 	}
 
@@ -691,6 +709,7 @@ function deploy_contract(e) {
 	console.log("postConstruct.encodeABI", data);
 
 	const factory = new web3.eth.Contract(GenericFactoryV1.abi, GenericFactory_Proxy.address);
+
 	deploy_tx.style["display"] = "none";
 	factory.methods["clone(address,bytes)"](AdvancedERC20_Impl.address, data).send({from: A0})
 		.on("transactionHash", function(hash) {
@@ -701,16 +720,16 @@ function deploy_contract(e) {
 		})
 /*
 		.on("confirmation", function(confirmation) {
-			console.log("confirmation", confirmation);
+			console.log("Deployment confirmation", confirmation);
 		})
 */
 		.on("receipt", function(receipt) {
 			if(!receipt.status || receipt.status === '0x0') {
-				// non_fatal_error("Transaction failed", receipt);
+				// non_fatal_error("Deployment failed", receipt);
 				return;
 			}
 
-			console.log("deploy_contract receipt", receipt);
+			console.log("Deployment receipt", receipt);
 
 			const decoded_event = decode_event(receipt, "ProxyDeployed", GenericFactoryV1);
 			console.log("decoded event", decoded_event);
@@ -753,7 +772,7 @@ function mint_tokens(e) {
 	}
 
 	if(!CONF.deployments_loaded()) {
-		alert("Application is still loading. Please wait.");
+		alert("The application is still loading. Please wait.");
 		return false;
 	}
 
@@ -763,6 +782,7 @@ function mint_tokens(e) {
 
 	const advanced_erc20 = new web3.eth.Contract(AdvancedERC20_Impl.abi, mint_address.value);
 	const mint_method = advanced_erc20.methods["mint(address,uint256)"];
+
 	mint_tx.style["display"] = "none";
 	mint_method(mint_to.value, BigInt(mint_amount.value) * BigInt(mint_amount_multiplier.value)).send({from: A0})
 		.on("transactionHash", function(hash) {
@@ -773,16 +793,16 @@ function mint_tokens(e) {
 		})
 /*
 		.on("confirmation", function(confirmation) {
-			console.log("confirmation", confirmation);
+			console.log("Mint confirmation", confirmation);
 		})
 */
 		.on("receipt", function(receipt) {
 			if(!receipt.status || receipt.status === '0x0') {
-				// non_fatal_error("Transaction failed", receipt);
+				// non_fatal_error("Mint failed", receipt);
 				return;
 			}
 
-			console.log("mint_token receipt", receipt);
+			console.log("Mint receipt", receipt);
 
 			const decoded_event = decode_event(receipt, "Transfer", AdvancedERC20_Impl);
 			console.log("decoded event", decoded_event);
@@ -821,7 +841,7 @@ function burn_tokens(e) {
 	}
 
 	if(!CONF.deployments_loaded()) {
-		alert("Application is still loading. Please wait.");
+		alert("The application is still loading. Please wait.");
 		return false;
 	}
 
@@ -831,6 +851,7 @@ function burn_tokens(e) {
 
 	const advanced_erc20 = new web3.eth.Contract(AdvancedERC20_Impl.abi, burn_token_addr.value);
 	const burn_method = advanced_erc20.methods["burn(address,uint256)"];
+
 	burn_tx.style["display"] = "none";
 	burn_method(burn_from.value, BigInt(burn_amount.value) * BigInt(burn_amount_multiplier.value)).send({from: A0})
 		.on("transactionHash", function(hash) {
@@ -841,16 +862,17 @@ function burn_tokens(e) {
 		})
 /*
 		.on("confirmation", function(confirmation) {
-			console.log("confirmation", confirmation);
+			console.log("Burn confirmation", confirmation);
 		})
 */
 		.on("receipt", function(receipt) {
 			if(!receipt.status || receipt.status === '0x0') {
-				// non_fatal_error("Transaction failed", receipt);
+				// non_fatal_error("Burn failed", receipt);
 				return;
 			}
 
-			console.log("burn_token receipt", receipt);
+			console.log("Burn receipt", receipt);
+
 			const decoded_event = decode_event(receipt, "Transfer", AdvancedERC20_Impl);
 			console.log("decoded event", decoded_event);
 			if(!decoded_event) {
@@ -862,7 +884,7 @@ function burn_tokens(e) {
 		})
 /*
 		.on("error", function(e) {
-			non_fatal_error("Mint failed", e);
+			non_fatal_error("Burn failed", e);
 		})
 */
 		.catch(function(e) {
@@ -888,7 +910,7 @@ function update_features(e) {
 	}
 
 	if(!CONF.deployments_loaded()) {
-		alert("Application is still loading. Please wait.");
+		alert("The application is still loading. Please wait.");
 		return false;
 	}
 
@@ -909,16 +931,16 @@ function update_features(e) {
 		})
 /*
 		.on("confirmation", function(confirmation) {
-			console.log("confirmation", confirmation);
+			console.log("UpdateFeatures confirmation", confirmation);
 		})
 */
 		.on("receipt", function(receipt) {
 			if(!receipt.status || receipt.status === '0x0') {
-				// non_fatal_error("Transaction failed", receipt);
+				// non_fatal_error("UpdateFeatures failed", receipt);
 				return;
 			}
 
-			console.log("update_features receipt", receipt);
+			console.log("UpdateFeatures receipt", receipt);
 
 			const decoded_event = decode_event(receipt, "RoleUpdated", AdvancedERC20_Impl);
 			console.log("decoded event", decoded_event);
@@ -936,7 +958,7 @@ function update_features(e) {
 		})
 /*
 		.on("error", function(e) {
-			non_fatal_error("Mint failed", e);
+			non_fatal_error("UpdateFeatures failed", e);
 		})
 */
 		.catch(function(e) {

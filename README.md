@@ -1,6 +1,6 @@
 # Advanced ERC20 #
-A feature-rich and lightweight ERC20 token implementation, designed independently from the OpenZeppelin ERC20 framework,
-offering enhanced flexibility and performance.
+A feature-rich and lightweight ERC20 token implementation, designed independently of the OpenZeppelin ERC20 framework,
+and offering enhanced flexibility and performance.
 
 ## Basic Features Summary
 - Symbol: configurable (set on deployment)
@@ -8,8 +8,8 @@ offering enhanced flexibility and performance.
 - Decimals: 18
 - Initial/maximum total supply: configurable (set on deployment)
 - Initial supply holder (initial holder) address: configurable (set on deployment)
-- Mintable: configurable (set on deployment); revocable
-- Burnable: configurable (set on deployment); revocable
+- Mintable: configurable (set on the deployment); revocable
+- Burnable: configurable (set on the deployment); revocable
 - Upgradable: no
 - DAO Support: supports voting delegation
 - Deployment: standalone or EIP-1167 cloning
@@ -24,9 +24,9 @@ offering enhanced flexibility and performance.
   approvals, and restricted access mints (which are sometimes viewed as transfers from zero address);
   allows creation of smart contracts capable of executing callbacks - in response to token transfer, approval,
   and token minting - in a single transaction
-- EIP-2612: permit - 712-signed approvals - improves user experience by allowing to use a token
+- EIP-2612: permit - 712-signed approvals – improves user experience by allowing to use a token
   without having an ETH to pay gas fees
-- EIP-3009: Transfer With Authorization - improves user experience by allowing to use a token
+- EIP-3009: Transfer With Authorization – improves user experience by allowing to use a token
   without having an ETH to pay gas fees
 
 See the full specs here: [Advanced ERC20 Token Specification.pdf](./docs/Advanced_ERC20_Token_Specification.pdf)
@@ -81,24 +81,24 @@ Following steps were tested to work in macOS Catalina
     ```cd advanced-erc20```
 3. Install [Node Version Manager (nvm)](https://github.com/nvm-sh/nvm) – latest  
     ```brew install nvm```
-4. Install [Node package manager (npm)](https://www.npmjs.com/) and [Node.js](https://nodejs.org/) – version lts/iron v20.11.1+  
-    ```nvm install 20```
+4. Install [Node package manager (npm)](https://www.npmjs.com/) and [Node.js](https://nodejs.org/) – version lts/jod v22.17.0+  
+    ```nvm install 22```
 5. Activate node version installed  
-    ```nvm use 20```
+    ```nvm use 22```
 6. Install project dependencies  
     ```npm install```
 
 ### Troubleshooting ###
-* After executing ```nvm use 20``` I get  
+* After executing ```nvm use 22``` I get  
     ```
-    nvm is not compatible with the npm config "prefix" option: currently set to "/usr/local/Cellar/nvm/0.39.7/versions/node/v20.11.1"
-    Run `npm config delete prefix` or `nvm use --delete-prefix v20.11.1` to unset it.
+    nvm is not compatible with the npm config "prefix" option: currently set to "/usr/local/Cellar/nvm/0.39.7/versions/node/v22.17.0"
+    Run `npm config delete prefix` or `nvm use --delete-prefix v22.17.0` to unset it.
     ```
     Fix:  
     ```
-    nvm use --delete-prefix v20.11.1
+    nvm use --delete-prefix v22.17.0
     npm config delete prefix
-    npm config set prefix "/usr/local/Cellar/nvm/0.39.7/versions/node/v20.11.1"
+    npm config set prefix "/usr/local/Cellar/nvm/0.39.7/versions/node/v22.17.0"
     ```
 * After executing ```npm install``` I get
     ```
@@ -118,6 +118,7 @@ Following steps were tested to work in macOS Catalina
     ```
 
 ### Notes on Ubuntu 20.04 LTS ###
+- [How to Install Node.js on Ubuntu (Step-by-Step Guide)](https://www.digitalocean.com/community/tutorials/how-to-install-node-js-on-ubuntu-22-04)
 - [How to install Node.js 20 on Ubuntu 20.04 LTS](https://joshtronic.com/2023/04/23/how-to-install-nodejs-20-on-ubuntu-2004-lts//)
 - [How to Run Linux Commands in Background](https://linuxize.com/post/how-to-run-linux-commands-in-background/)
 
@@ -134,22 +135,22 @@ Following steps were tested to work in macOS Catalina
 
     You can use MetaMask to create mnemonics: https://metamask.io/
 
-    > Note: you can use same mnemonic for test networks (sepolia, mumbai, bsc_testnet, and base_sepolia).
+    > Note: you can use the same mnemonic for test networks (sepolia, mumbai, bsc_testnet, and base_sepolia).
     Always use a separate one for mainnet, keep it secure.
 
     > Note: you can add more configurations to connect to the networks not listed above.
     Check and add configurations required into the [hardhat.config.js](hardhat.config.js).
 
-    > Note: you can use private keys instead of mnemonics (see Alternative Configuration section below)
+    > Note: you can use private keys instead of mnemonics (see the Alternative Configuration section below)
 
 2.  Create an infura access key at https://infura.io/
 
-    Note: you can use alchemy API key instead of infura access key (see Alternative Configuration section below)
+    Note: you can use an alchemy API key instead of infura access key (see the Alternative Configuration section below)
 
 3.  Create etherscan API key at https://etherscan.io/
 
 4.  Export mnemonics, infura access key, and etherscan API key as system environment variables
-    (they should be available for hardhat):
+    (they should be available for the hardhat):
 
     | Name             | Value                 |
     |------------------|-----------------------|
@@ -174,7 +175,7 @@ set up environment variables in Linux, Windows and macOS.
 ### Example Script: macOS Catalina ###
 ```
 export MNEMONIC1="witch collapse practice feed shame open despair creek road again ice least"
-export MNEMONIC5="someone relief rubber remove donkey jazz segment nose spray century put beach"
+export MNEMONIC11155111="someone relief rubber remove donkey jazz segment nose spray century put beach"
 export MNEMONIC137="slush oyster cash hotel choice universe puzzle slot reflect sword intact fat"
 export MNEMONIC80001="result mom hard lend adapt where result mule address ivory excuse embody"
 export MNEMONIC56="slush oyster cash hotel choice universe puzzle slot reflect sword intact fat"
@@ -215,7 +216,7 @@ If both infura and alchemy keys are set, alchemy is used.
 3.  Create etherscan API key at https://etherscan.io/
 
 4.  Export private keys, infura access key, and etherscan API key as system environment variables
-    (they should be available for hardhat):
+    (they should be available for the hardhat):
 
     | Name          | Value                    |
     |---------------|--------------------------|
@@ -238,7 +239,7 @@ If both infura and alchemy keys are set, alchemy is used.
 ### Example Script: macOS Catalina ###
 ```
 export P_KEY1="0x5ed21858f273023c7fc0683a1e853ec38636553203e531a79d677cb39b3d85ad"
-export P_KEY5="0xfb84b845b8ea672939f5f6c9a43b2ae53b3ee5eb8480a4bfc5ceeefa459bf20c"
+export P_KEY11155111="0xfb84b845b8ea672939f5f6c9a43b2ae53b3ee5eb8480a4bfc5ceeefa459bf20c"
 export P_KEY137="0x5ed21858f273023c7fc0683a1e853ec38636553203e531a79d677cb39b3d85ad"
 export P_KEY80001="0xfb84b845b8ea672939f5f6c9a43b2ae53b3ee5eb8480a4bfc5ceeefa459bf20c"
 export P_KEY56="0x5ed21858f273023c7fc0683a1e853ec38636553203e531a79d677cb39b3d85ad"
@@ -272,7 +273,7 @@ Execute ```npx hardhat compile``` command to compile smart contracts.
 
 Compilation settings are defined in [hardhat.config.js](./hardhat.config.js) ```solidity``` section.
 
-Note: Solidity files *.sol use strict compiler version, you need to change all the headers when upgrading the
+Note: Solidity files *.sol use the strict compiler version, you need to change all the headers when upgrading the
 compiler to another version 
 
 ## Testing ##
@@ -297,7 +298,7 @@ Example: ```npx hardhat test ./test/erc20/erc20_zeppelin.js```
     ```
 
 ## Test Coverage ##
-Smart contracts test coverage is powered by [solidity-coverage] plugin.
+Smart contracts test coverage is powered by the [solidity-coverage] plugin.
 
 Run `npx hardhat coverage` to run test coverage and generate the report.
 
@@ -314,20 +315,20 @@ Run `npx hardhat coverage` to run test coverage and generate the report.
     <--- JS stacktrace --->
 
     FATAL ERROR: Ineffective mark-compacts near heap limit Allocation failed - JavaScript heap out of memory
-     1: 0x10610e065 node::Abort() (.cold.1) [/usr/local/opt/nvm/versions/node/v20.11.1/bin/node]
-     2: 0x104dabc19 node::Abort() [/usr/local/opt/nvm/versions/node/v20.11.1/bin/node]
-     3: 0x104dabd8f node::OnFatalError(char const*, char const*) [/usr/local/opt/nvm/versions/node/v20.11.1/bin/node]
-     4: 0x104f29ef7 v8::Utils::ReportOOMFailure(v8::internal::Isolate*, char const*, bool) [/usr/local/opt/nvm/versions/node/v20.11.1/bin/node]
-     5: 0x104f29e93 v8::internal::V8::FatalProcessOutOfMemory(v8::internal::Isolate*, char const*, bool) [/usr/local/opt/nvm/versions/node/v20.11.1/bin/node]
-     6: 0x1050f8be5 v8::internal::Heap::FatalProcessOutOfMemory(char const*) [/usr/local/opt/nvm/versions/node/v20.11.1/bin/node]
-     7: 0x1050fccb6 v8::internal::Heap::RecomputeLimits(v8::internal::GarbageCollector) [/usr/local/opt/nvm/versions/node/v20.11.1/bin/node]
-     8: 0x1050f94f6 v8::internal::Heap::PerformGarbageCollection(v8::internal::GarbageCollector, v8::GCCallbackFlags) [/usr/local/opt/nvm/versions/node/v20.11.1/bin/node]
-     9: 0x1050f6c4d v8::internal::Heap::CollectGarbage(v8::internal::AllocationSpace, v8::internal::GarbageCollectionReason, v8::GCCallbackFlags) [/usr/local/opt/nvm/versions/node/v20.11.1/bin/node]
-    10: 0x105103dca v8::internal::Heap::AllocateRawWithLightRetrySlowPath(int, v8::internal::AllocationType, v8::internal::AllocationOrigin, v8::internal::AllocationAlignment) [/usr/local/opt/nvm/versions/node/v20.11.1/bin/node]
-    11: 0x105103e51 v8::internal::Heap::AllocateRawWithRetryOrFailSlowPath(int, v8::internal::AllocationType, v8::internal::AllocationOrigin, v8::internal::AllocationAlignment) [/usr/local/opt/nvm/versions/node/v20.11.1/bin/node]
-    12: 0x1050d425c v8::internal::Factory::NewFillerObject(int, bool, v8::internal::AllocationType, v8::internal::AllocationOrigin) [/usr/local/opt/nvm/versions/node/v20.11.1/bin/node]
-    13: 0x10546fe0f v8::internal::Runtime_AllocateInYoungGeneration(int, unsigned long*, v8::internal::Isolate*) [/usr/local/opt/nvm/versions/node/v20.11.1/bin/node]
-    14: 0x105839d19 Builtins_CEntry_Return1_DontSaveFPRegs_ArgvOnStack_NoBuiltinExit [/usr/local/opt/nvm/versions/node/v20.11.1/bin/node]
+     1: 0x10610e065 node::Abort() (.cold.1) [/usr/local/opt/nvm/versions/node/v22.17.0/bin/node]
+     2: 0x104dabc19 node::Abort() [/usr/local/opt/nvm/versions/node/v22.17.0/bin/node]
+     3: 0x104dabd8f node::OnFatalError(char const*, char const*) [/usr/local/opt/nvm/versions/node/v22.17.0/bin/node]
+     4: 0x104f29ef7 v8::Utils::ReportOOMFailure(v8::internal::Isolate*, char const*, bool) [/usr/local/opt/nvm/versions/node/v22.17.0/bin/node]
+     5: 0x104f29e93 v8::internal::V8::FatalProcessOutOfMemory(v8::internal::Isolate*, char const*, bool) [/usr/local/opt/nvm/versions/node/v22.17.0/bin/node]
+     6: 0x1050f8be5 v8::internal::Heap::FatalProcessOutOfMemory(char const*) [/usr/local/opt/nvm/versions/node/v22.17.0/bin/node]
+     7: 0x1050fccb6 v8::internal::Heap::RecomputeLimits(v8::internal::GarbageCollector) [/usr/local/opt/nvm/versions/node/v22.17.0/bin/node]
+     8: 0x1050f94f6 v8::internal::Heap::PerformGarbageCollection(v8::internal::GarbageCollector, v8::GCCallbackFlags) [/usr/local/opt/nvm/versions/node/v22.17.0/bin/node]
+     9: 0x1050f6c4d v8::internal::Heap::CollectGarbage(v8::internal::AllocationSpace, v8::internal::GarbageCollectionReason, v8::GCCallbackFlags) [/usr/local/opt/nvm/versions/node/v22.17.0/bin/node]
+    10: 0x105103dca v8::internal::Heap::AllocateRawWithLightRetrySlowPath(int, v8::internal::AllocationType, v8::internal::AllocationOrigin, v8::internal::AllocationAlignment) [/usr/local/opt/nvm/versions/node/v22.17.0/bin/node]
+    11: 0x105103e51 v8::internal::Heap::AllocateRawWithRetryOrFailSlowPath(int, v8::internal::AllocationType, v8::internal::AllocationOrigin, v8::internal::AllocationAlignment) [/usr/local/opt/nvm/versions/node/v22.17.0/bin/node]
+    12: 0x1050d425c v8::internal::Factory::NewFillerObject(int, bool, v8::internal::AllocationType, v8::internal::AllocationOrigin) [/usr/local/opt/nvm/versions/node/v22.17.0/bin/node]
+    13: 0x10546fe0f v8::internal::Runtime_AllocateInYoungGeneration(int, unsigned long*, v8::internal::Isolate*) [/usr/local/opt/nvm/versions/node/v22.17.0/bin/node]
+    14: 0x105839d19 Builtins_CEntry_Return1_DontSaveFPRegs_ArgvOnStack_NoBuiltinExit [/usr/local/opt/nvm/versions/node/v22.17.0/bin/node]
     Abort trap: 6
     ```
 
@@ -342,7 +343,7 @@ Deployments are implemented via [hardhat-deploy plugin](https://github.com/wigha
 Deployment scripts perform smart contracts deployment itself and their setup configuration.
 Executing a script may require several transactions to complete, which may fail. To help troubleshoot
 partially finished deployment, the scripts are designed to be rerunnable and execute only the transactions
-which were not executed in previous run(s).
+which were not executed in the previous run(s).
 
 Deployment scripts are located under [deploy](./deploy) folder.
 Deployment execution state is saved under [deployments](./deployments) folder.
@@ -356,7 +357,7 @@ To run fresh deployment (sepolia):
     npx hardhat deploy --network sepolia --tags deploy-GenericFactoryV1
     ```
     where ```deploy-GenericFactoryV1``` specifies the deployment script(s) tag to run,
-    and ```--network sepolia``` specifies the network to run script for
+    and ```--network sepolia``` specifies the network to run the script for
     (see [hardhat.config.js](./hardhat.config.js) for network definitions).
 
 3. Verify source code on Etherscan with the ```npm run verify-sepolia``` command
@@ -364,8 +365,8 @@ To run fresh deployment (sepolia):
     npm run verify-sepolia
     ```
 
-To rerun the deployment script and continue partially completed script skip the first step
-(do not cleanup the [deployments](./deployments) folder).
+To rerun the deployment script and continue a partially completed script, skip the first step
+(do not clean up the [deployments](./deployments) folder).
 
 To upgrade the contract(s) (sepolia):
 
@@ -377,7 +378,7 @@ To upgrade the contract(s) (sepolia):
     npx hardhat deploy --network sepolia --tags upgrade-GenericFactoryV1
     ```
     where ```upgrade-GenericFactoryV1``` specifies the upgrade script(s) tag to run,
-    and ```--network sepolia``` specifies the network to run script for
+    and ```--network sepolia``` specifies the network to run the script for
     (see [hardhat.config.js](./hardhat.config.js) for network definitions).
 
 3. Verify source code on Etherscan with the ```npm run verify-sepolia``` command
