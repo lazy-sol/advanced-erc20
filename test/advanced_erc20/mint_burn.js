@@ -18,6 +18,9 @@ const {
 	MAX_UINT256,
 } = constants;
 
+// BN constants and utilities
+const {random_bn} = require("@lazy-sol/a-missing-gem");
+
 // token constants
 const {TOTAL_SUPPLY: S0} = require("./include/erc20_constants");
 
@@ -277,8 +280,8 @@ contract("AdvancedRC20: Mint/Burn", function(accounts) {
 						await expectRevert(token.burn(from, value, {from: by}), msg);
 					});
 				}
-				function execute_burn_scenarios(by, from, value) {
-					function behaves_like_burn(by, from, value) {
+				function execute_burn_scenarios(by, from, value, approved) {
+					function behaves_like_burn(by, from, value, approved) {
 						let s1, b1, receipt;
 						beforeEach(async function() {
 							s1 = await token.totalSupply();
@@ -300,6 +303,28 @@ contract("AdvancedRC20: Mint/Burn", function(accounts) {
 						it('emits ERC20 "Transfer" event', async function() {
 							expectEvent(receipt,"Transfer", {from, to: ZERO_ADDRESS, value});
 						});
+						if(approved) {
+							it('emits improved "Approval" event (arXiv:1907.00903)', async function() {
+								expectEvent(receipt, "Approval", {
+									owner: from,
+									spender: by,
+									oldValue: approved,
+									value: approved.sub(value),
+								});
+							});
+							it('emits ERC20 "Approval" event', async function() {
+								expectEvent(receipt, "Approval", {
+									owner: from,
+									spender: by,
+									value: approved.sub(value),
+								});
+							});
+						}
+						else {
+							it('does not emit an "Approval" event', async function() {
+								expectEvent.notEmitted(receipt, "Approval");
+							});
+						}
 					}
 
 					it("when the amount is zero – burn reverts", async function () {
@@ -312,7 +337,7 @@ contract("AdvancedRC20: Mint/Burn", function(accounts) {
 						await expectRevert(token.burn(H0, S0.addn(1), {from: a0}), "burn amount exceeds balance");
 					});
 					describe("when amount and supplier address are correct", function() {
-						behaves_like_burn(by, from, value);
+						behaves_like_burn(by, from, value, approved);
 					});
 				}
 
@@ -336,14 +361,15 @@ contract("AdvancedRC20: Mint/Burn", function(accounts) {
 						});
 					});
 					describe("when burning tokens on behalf", function() {
+						const approved = value.add(random_bn(1, value));
 						beforeEach(async function() {
-							await token.approve(by, value.muln(2), {from: from});
+							await token.approve(by, approved, {from: from});
 						});
 						describe("when BURNS_ON_BEHALF is enabled", function() {
 							beforeEach(async function() {
 								await token.updateFeatures(FEATURE_BURNS_ON_BEHALF, {from: a0});
 							});
-							execute_burn_scenarios(by, from, value);
+							execute_burn_scenarios(by, from, value, approved);
 						});
 						describe("when BURNS_ON_BEHALF is not enabled", function() {
 							burn_reverts(by, from, value, "burns on behalf are disabled");

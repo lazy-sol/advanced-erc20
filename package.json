@@ -1,6 +1,6 @@
 {
 	"name": "@lazy-sol/advanced-erc20",
-	"version": "1.1.9",
+	"version": "1.1.10",
 	"description": "Feature rich lightweight ERC20 implementation which is not based on the OpenZeppelin ERC20 implementation",
 	"main": "index.js",
 	"engines": {
@@ -46,9 +46,9 @@
 		"eth-sig-util": "^3.0.1",
 		"ethereumjs-util": "^7.1.5",
 		"ethereumjs-wallet": "^1.0.2",
-		"hardhat": "^2.25.0",
+		"hardhat": "^2.26.4",
 		"hardhat-dependency-compiler": "^1.2.1",
-		"hardhat-deploy": "^0.11.45",
+		"hardhat-deploy": "^1.0.4",
 		"loglevel": "^1.9.2",
 		"solidity-coverage": "^0.8.16"
 	},

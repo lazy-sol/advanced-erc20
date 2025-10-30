@@ -1443,7 +1443,7 @@ contract AdvancedERC20 is MintableERC1363, MintableBurnableERC20, EIP2612, EIP30
 					transferAllowances[from][msg.sender] = _allowance;
 
 					// emit an improved atomic approve event (arXiv:1907.00903)
-					emit Approval(msg.sender, from, _allowance + value, _allowance);
+					emit Approval(from, msg.sender, _allowance + value, _allowance);
 
 					// emit an ERC20 approval event to reflect the decrease
 					emit Approval(from, msg.sender, _allowance);
